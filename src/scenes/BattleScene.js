@@ -125,6 +125,7 @@ export default class BattleScene extends Phaser.Scene {
   // ─── 캐릭터 순환 ─────────────────────────────────────
 
   _advanceCharacter() {
+    if (this.battleEnded) return
     this.characterSlots[this.activeIndex].setActive(false)
     let attempts = 0
     do {
