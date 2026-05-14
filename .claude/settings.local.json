@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -E '^\\(phaser|vite|vitest\\)$')"
+      "Bash(grep -E '^\\(phaser|vite|vitest\\)$')",
+      "Bash(node -e \":*)"
     ]
   }
 }
