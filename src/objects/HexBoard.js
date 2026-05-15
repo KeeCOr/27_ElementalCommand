@@ -1,37 +1,36 @@
 import Phaser from 'phaser'
 import Gem from './Gem.js'
-import { BOARD_CONFIG, GAME_WIDTH, GAME_HEIGHT } from '../constants.js'
-import { hexToPixel, areNeighbors, HEX_WIDTH, HEX_SPACING_Y } from '../systems/HexGeometry.js'
+import { BOARD_CONFIG, GAME_WIDTH } from '../constants.js'
+import { hexToPixel, areNeighbors, HEX_WIDTH } from '../systems/HexGeometry.js'
 import { spawnBoard } from '../systems/GemSpawner.js'
 
 const { cols, rows, hexRadius } = BOARD_CONFIG
-
-// 보드 좌상단 기준점 (픽셀)
 const BOARD_ORIGIN_X = (GAME_WIDTH - cols * HEX_WIDTH) / 2
-const BOARD_ORIGIN_Y = 400   // 플레이테스트 후 조정
+const BOARD_ORIGIN_Y = 400
 
 export default class HexBoard extends Phaser.GameObjects.Container {
-  /**
-   * @param {Phaser.Scene} scene
-   * @param {Object} weights - buildWeights() 결과
-   */
   constructor(scene, weights) {
     super(scene, 0, 0)
     this.scene = scene
     this.weights = weights
-
-    // gems[col][row] = Gem
     this.gems = []
-    // 드래그 경로: [{col, row, gemType}]
     this.dragPath = []
     this.isDragging = false
 
+    this.boardFrame = scene.add.graphics()
+    this._drawBoardFrame()
     this.lineGraphics = scene.add.graphics().setDepth(5)
 
     this._buildGrid()
     this._setupInput()
 
     scene.add.existing(this)
+  }
+
+  _drawBoardFrame() {
+    this.boardFrame.clear()
+    this.boardFrame.fillStyle(0x07101f, 0.42).fillRoundedRect(58, 346, 364, 300, 18)
+    this.boardFrame.lineStyle(2, 0x58d7ff, 0.15).strokeRoundedRect(59, 347, 362, 298, 18)
   }
 
   _buildGrid() {
@@ -87,9 +86,7 @@ export default class HexBoard extends Phaser.GameObjects.Container {
   }
 
   _extendDrag(gem) {
-    // 이미 경로에 포함된 젬은 무시
     if (this.dragPath.some(p => p.col === gem.col && p.row === gem.row)) return
-    // 마지막 젬의 이웃이어야 함
     const last = this.dragPath[this.dragPath.length - 1]
     if (!areNeighbors(last.col, last.row, gem.col, gem.row, cols, rows)) return
 
@@ -103,33 +100,35 @@ export default class HexBoard extends Phaser.GameObjects.Container {
     const path = [...this.dragPath]
     this.dragPath = []
 
-    // 하이라이트 해제
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         this.gems[col]?.[row]?.setHighlight(false)
       }
     }
     this.lineGraphics.clear()
-
-    // dragComplete 이벤트로 경로 전달
     this.emit('dragComplete', path)
   }
 
   _drawPath() {
     this.lineGraphics.clear()
     if (this.dragPath.length < 2) return
-    this.lineGraphics.lineStyle(5, 0xffffff, 0.7)
+    this.lineGraphics.lineStyle(9, 0x7df9ff, 0.23)
+    this._strokeDragPath()
+    this.lineGraphics.lineStyle(4, 0xffffff, 0.85)
+    this._strokeDragPath()
+  }
+
+  _strokeDragPath() {
     this.lineGraphics.beginPath()
     for (let i = 0; i < this.dragPath.length; i++) {
       const { col, row } = this.dragPath[i]
       const gem = this.gems[col][row]
       if (i === 0) this.lineGraphics.moveTo(gem.x, gem.y)
-      else         this.lineGraphics.lineTo(gem.x, gem.y)
+      else this.lineGraphics.lineTo(gem.x, gem.y)
     }
     this.lineGraphics.strokePath()
   }
 
-  /** 보드를 새로 스폰 (전투 종료 또는 리셋 시 사용) */
   refreshBoard() {
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
