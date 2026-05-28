@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { CHARACTERS } from '../data/characters.js'
-import { GEM_LABEL, GAME_WIDTH, GAME_HEIGHT } from '../constants.js'
+import { GEM_LABEL, GAME_WIDTH, GAME_HEIGHT, UI_FONT } from '../constants.js'
 
 export default class PartySelectScene extends Phaser.Scene {
   constructor() { super({ key: 'PartySelectScene' }) }
@@ -9,78 +9,129 @@ export default class PartySelectScene extends Phaser.Scene {
 
   create() {
     this.selectedParty = []
-    this.cardMap = new Map()  // characterId → card rectangle
+    this.cardMap = new Map()
 
-    this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x1a1a2e)
+    this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'bg-menu')
 
-    this.add.text(GAME_WIDTH / 2, 55, '파티 편성 (최대 4인)', {
-      fontSize: '20px', color: '#ffffff', fontStyle: 'bold'
+    this.add.text(GAME_WIDTH / 2, 52, 'Assemble Party', {
+      fontSize: '24px',
+      fontFamily: UI_FONT,
+      color: '#ffffff',
+      fontStyle: 'bold',
+      stroke: '#101729',
+      strokeThickness: 5
+    }).setOrigin(0.5)
+
+    this.add.text(GAME_WIDTH / 2, 82, 'Pick up to four commanders', {
+      fontSize: '13px',
+      fontFamily: UI_FONT,
+      color: '#b7c7ff'
     }).setOrigin(0.5)
 
     CHARACTERS.forEach((char, i) => {
       const col = i % 2
       const row = Math.floor(i / 2)
       const x = 120 + col * 242
-      const y = 155 + row * 130
+      const y = 168 + row * 132
 
-      const card = this.add.rectangle(x, y, 210, 110, 0x2a2a4e)
-        .setStrokeStyle(2, char.color)
+      const card = this.add.image(x, y, 'ui-party-card')
+      const hitZone = this.add.zone(x, y, 214, 116)
         .setInteractive({ useHandCursor: true })
       this.cardMap.set(char.id, card)
 
-      this.add.text(x, y - 36, char.name, {
-        fontSize: '16px', color: '#ffffff', fontStyle: 'bold'
+      this.add.image(x - 70, y + 5, `portrait-${char.id}`).setDisplaySize(62, 62)
+
+      this.add.text(x + 24, y - 34, char.name, {
+        fontSize: '13px',
+        fontFamily: UI_FONT,
+        color: '#ffffff',
+        fontStyle: 'bold'
       }).setOrigin(0.5)
 
-      const seqStr = char.skillSequence.map(t => GEM_LABEL[t]).join('→')
-      this.add.text(x, y - 10, seqStr, {
-        fontSize: '12px', color: '#aaaaaa'
+      const seqStr = char.skillSequence.map(t => GEM_LABEL[t]).join('  ')
+      this.add.text(x + 24, y - 11, seqStr, {
+        fontSize: '13px',
+        fontFamily: UI_FONT,
+        color: '#d9f2ff',
+        fontStyle: 'bold'
       }).setOrigin(0.5)
 
-      this.add.text(x, y + 12, char.skillName, {
-        fontSize: '12px', color: '#ffff88'
+      this.add.text(x + 24, y + 12, char.skillName, {
+        fontSize: '11px',
+        fontFamily: UI_FONT,
+        color: '#fff1a8'
       }).setOrigin(0.5)
 
-      this.add.text(x, y + 34, `공격력 ${char.attack}  HP ${char.maxHp}`, {
-        fontSize: '10px', color: '#aaaaaa'
+      this.add.text(x + 24, y + 34, `ATK ${char.attack}  HP ${char.maxHp}`, {
+        fontSize: '10px',
+        fontFamily: UI_FONT,
+        color: '#aab7d8'
       }).setOrigin(0.5)
 
-      card.on('pointerdown', () => this._toggleCharacter(char))
+      hitZone.on('pointerover', () => card.setTint(0xd8ecff))
+      hitZone.on('pointerout', () => this._refreshCardTint(char.id))
+      hitZone.on('pointerdown', () => this._toggleCharacter(char))
     })
 
-    this.partyDisplay = this.add.text(GAME_WIDTH / 2, 555, '파티: (미선택)', {
-      fontSize: '13px', color: '#ffff88'
+    this.partyDisplay = this.add.text(GAME_WIDTH / 2, 568, 'Party: empty', {
+      fontSize: '13px',
+      fontFamily: UI_FONT,
+      color: '#fff1a8'
     }).setOrigin(0.5)
 
-    // 전투 시작 버튼
-    const startBtn = this.add.rectangle(GAME_WIDTH / 2, 630, 220, 60, 0x224422)
-      .setStrokeStyle(2, 0x44aa44)
+    this.startBtn = this.add.image(GAME_WIDTH / 2, 634, 'ui-button-disabled')
+      .setDisplaySize(224, 58)
+
+    this.startHitZone = this.add.zone(GAME_WIDTH / 2, 634, 224, 58)
       .setInteractive({ useHandCursor: true })
 
-    this.add.text(GAME_WIDTH / 2, 630, '전투 시작!', {
-      fontSize: '20px', color: '#44ff44', fontStyle: 'bold'
+    this.startLabel = this.add.text(GAME_WIDTH / 2, 634, 'Select Commander', {
+      fontSize: '18px',
+      fontFamily: UI_FONT,
+      color: '#d5def4',
+      fontStyle: 'bold'
     }).setOrigin(0.5)
 
-    startBtn.on('pointerover', () => startBtn.setFillStyle(0x336633))
-    startBtn.on('pointerout',  () => startBtn.setFillStyle(0x224422))
-    startBtn.on('pointerdown', () => {
+    this.startHitZone.on('pointerover', () => {
+      if (this.selectedParty.length > 0) this.startBtn.setTint(0xcaffdf)
+    })
+    this.startHitZone.on('pointerout', () => {
+      this.startBtn.clearTint()
+      this._refreshStartButton()
+    })
+    this.startHitZone.on('pointerdown', () => {
       if (this.selectedParty.length === 0) return
       this.scene.start('BattleScene', { stageId: this.stageId, party: this.selectedParty })
     })
+    this._refreshStartButton()
   }
 
   _toggleCharacter(char) {
     const idx = this.selectedParty.findIndex(c => c.id === char.id)
-    const card = this.cardMap.get(char.id)
     if (idx >= 0) {
       this.selectedParty.splice(idx, 1)
-      card.setFillStyle(0x2a2a4e)
     } else {
       if (this.selectedParty.length >= 4) return
       this.selectedParty.push(char)
-      card.setFillStyle(0x4a4a8e)
     }
-    const names = this.selectedParty.map(c => c.name).join(', ') || '(미선택)'
-    this.partyDisplay.setText(`파티: ${names}`)
+    this._refreshCardTint(char.id)
+    const names = this.selectedParty.map(c => c.name).join(', ') || 'empty'
+    this.partyDisplay.setText(`Party: ${names}`)
+    this._refreshStartButton()
+  }
+
+  _refreshCardTint(characterId) {
+    const card = this.cardMap.get(characterId)
+    if (!card) return
+    const selected = this.selectedParty.some(c => c.id === characterId)
+    if (selected) card.setTint(0x87ffca)
+    else card.clearTint()
+  }
+
+  _refreshStartButton() {
+    const ready = this.selectedParty.length > 0
+    this.startBtn.setTexture(ready ? 'ui-button-ready' : 'ui-button-disabled')
+    this.startLabel.setText(ready ? `Start Battle (${this.selectedParty.length})` : 'Select Commander')
+    this.startLabel.setColor(ready ? '#d6ffe8' : '#d5def4')
   }
 }

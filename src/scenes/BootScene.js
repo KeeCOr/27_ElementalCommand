@@ -1,7 +1,20 @@
 import Phaser from 'phaser'
+import { createArtAssets } from '../systems/ArtFactory.js'
+import { ART_SHEET_SOURCES, ART_SOURCE_IMAGES } from '../systems/AssetManifest.js'
 
 export default class BootScene extends Phaser.Scene {
   constructor() { super({ key: 'BootScene' }) }
-  preload() { /* MVP: 절차적 렌더링이므로 외부 에셋 없음 */ }
-  create()  { this.scene.start('StageSelectScene') }
+  preload() {
+    Object.values(ART_SOURCE_IMAGES).forEach(source => {
+      this.load.image(source.key, source.path)
+    })
+    ART_SHEET_SOURCES.forEach(source => {
+      this.load.image(source.key, source.path)
+    })
+  }
+
+  create() {
+    createArtAssets(this)
+    this.scene.start('StageSelectScene')
+  }
 }

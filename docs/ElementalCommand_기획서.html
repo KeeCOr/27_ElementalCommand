@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elemental Command 기획서</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #e0e0e0;
+    line-height: 1.7;
+    padding: 40px 20px;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 {
+    text-align: center;
+    font-size: 2.4em;
+    background: linear-gradient(90deg, #ff6b35, #f7c948, #4ecdc4, #a78bfa, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+  .meta {
+    text-align: center;
+    color: #888;
+    margin-bottom: 40px;
+    font-size: 0.95em;
+  }
+  .meta span { margin: 0 12px; }
+  h2 {
+    color: #4ecdc4;
+    font-size: 1.5em;
+    margin: 40px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #4ecdc433;
+  }
+  h3 {
+    color: #f7c948;
+    font-size: 1.15em;
+    margin: 24px 0 12px;
+  }
+  h4 {
+    color: #a78bfa;
+    font-size: 1.05em;
+    margin: 18px 0 8px;
+  }
+  p, li { margin-bottom: 8px; }
+  ul, ol { padding-left: 24px; }
+  .overview-box {
+    background: rgba(78, 205, 196, 0.08);
+    border: 1px solid #4ecdc444;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    text-align: center;
+    font-size: 1.1em;
+  }
+  .flow-box {
+    background: rgba(163, 123, 250, 0.08);
+    border: 1px solid #a78bfa44;
+    border-radius: 10px;
+    padding: 16px 24px;
+    margin: 16px 0;
+    font-family: 'Consolas', monospace;
+    text-align: center;
+    font-size: 1.05em;
+    letter-spacing: 1px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.95em;
+  }
+  th {
+    background: rgba(78, 205, 196, 0.15);
+    color: #4ecdc4;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 2px solid #4ecdc444;
+  }
+  td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #ffffff11;
+  }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+  code {
+    background: rgba(255,255,255,0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.92em;
+  }
+  pre {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #ffffff15;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: 'Consolas', monospace;
+    font-size: 0.9em;
+    line-height: 1.5;
+    margin: 12px 0;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.82em;
+    font-weight: 600;
+    margin: 2px;
+  }
+  .tag-fire { background: #ff444433; color: #ff6b6b; }
+  .tag-water { background: #4488ff33; color: #6baaff; }
+  .tag-grass { background: #44cc4433; color: #6bdd6b; }
+  .tag-light { background: #ffee4433; color: #ffe066; }
+  .tag-dark { background: #aa44cc33; color: #cc88ee; }
+  .section-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #ffffff11;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+  }
+  .char-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .char-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid #ffffff15;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .char-card h4 { margin-top: 0; }
+  .char-stats { font-size: 0.9em; color: #aab7d8; margin: 6px 0; }
+  .skill-row { font-size: 0.88em; margin: 4px 0; color: #ccc; }
+  .skill-row strong { color: #f7c948; }
+  .roadmap-item {
+    padding: 6px 0;
+    padding-left: 28px;
+    position: relative;
+  }
+  .roadmap-item::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 12px;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    border: 2px solid #4ecdc4;
+  }
+  .roadmap-item.done::before {
+    background: #4ecdc4;
+  }
+  .layout-box {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #ffffff15;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.88em;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Elemental Command</h1>
+<div class="meta">
+  <span>v0.1.0</span>
+  <span>2026-05-21</span>
+  <span>실시간 퍼즐 배틀 RPG</span>
+  <span>480x854</span>
+</div>
+
+<!-- 1. 게임 개요 -->
+<h2>플레이 미리보기</h2>
+
+<h3>플레이 미리보기</h3>
+<img src="./ElementalCommand_gameplay_preview.png" alt="플레이 미리보기" style="max-width:100%;border-radius:8px;margin:12px 0;">
+
+<h2>1. 게임 개요</h2>
+<div class="overview-box">
+  헥사곤 보드 위의 젬을 드래그하여 시퀀스를 만들고,<br>
+  캐릭터의 스킬을 발동시켜 적을 처치하는 <strong>실시간 퍼즐 배틀 게임</strong>.<br>
+  <span class="tag tag-fire">Fire</span>
+  <span class="tag tag-water">Water</span>
+  <span class="tag tag-grass">Grass</span>
+  <span class="tag tag-light">Light</span>
+  <span class="tag tag-dark">Dark</span>
+  5가지 속성의 전략적 조합과 파티 편성이 핵심.
+</div>
+
+<!-- 2. 핵심 루프 -->
+<h2>2. 핵심 게임플레이 루프</h2>
+<div class="flow-box">
+  스테이지 선택 &rarr; 파티 편성(1~4명) &rarr; 전투 &rarr; 승리/패배 &rarr; 스테이지 선택
+</div>
+
+<h3>2.1 전투 흐름</h3>
+<ol>
+  <li>적이 스폰되고 독립적인 공격 타이머 시작 (실시간)</li>
+  <li>플레이어가 헥스 보드에서 인접 젬을 드래그하여 시퀀스 생성</li>
+  <li>시퀀스가 현재 캐릭터의 <strong>선택된 스킬</strong> 요구 젬과 일치하면 스킬 발동 (배율 + 컷인)</li>
+  <li>불일치 시 기본 공격 (배율 없음)</li>
+  <li>드래그된 젬은 소모 &rarr; 즉시 리필 (파티 가중치 기반)</li>
+  <li>드래그 완료 시 자동으로 다음 캐릭터로 전환</li>
+  <li>적 전멸 = 승리 / 파티 전멸 = 패배</li>
+</ol>
+
+<!-- 3. 보드 시스템 -->
+<h2>3. 헥사곤 보드 시스템</h2>
+<table>
+  <tr><th>항목</th><th>내용</th></tr>
+  <tr><td>보드 크기</td><td>5열 x 6행 (헥사곤 그리드)</td></tr>
+  <tr><td>헥스 반경</td><td>36px</td></tr>
+  <tr><td>젬 종류</td><td>5속성: Fire(F), Water(W), Grass(N), Light(L), Dark(D)</td></tr>
+  <tr><td>특수 아이템</td><td>폭탄(B) 4%, 라인클리어(R) 3%</td></tr>
+  <tr><td>장애물</td><td>적 공격 시 생성, 상호작용 불가</td></tr>
+</table>
+
+<h3>3.1 젬 스폰 (파티 가중치)</h3>
+<div class="section-card">
+  <p>기본 각 속성 20% / 파티 캐릭터 속성 보너스: <strong>+8%/캐릭터</strong></p>
+  <p>부족분은 나머지 속성에 균등 분배</p>
+  <p><strong>예시:</strong> 파티(Fire, Fire, Water, Grass) &rarr; Fire 36%, Water 28%, Grass 28%, Light 14%, Dark 14%</p>
+</div>
+
+<h3>3.2 젬 소모 및 리필</h3>
+<ul>
+  <li>드래그 완료 시 경로상의 젬이 소모됨</li>
+  <li>소모된 셀은 즉시 리필 (파티 가중치 기반 확률)</li>
+  <li>리필 확률: 폭탄 4% / 라인클리어 3% / 일반 젬 93%</li>
+  <li>리필 애니메이션: 기존 젬 페이드+확대 &rarr; 컬러 버스트 &rarr; 새 젬 팝인</li>
+</ul>
+
+<h3>3.3 특수 아이템 효과</h3>
+<ul>
+  <li><strong>폭탄(B):</strong> 드래그 경로에 포함 시 인접 비장애물 셀도 함께 소모</li>
+  <li><strong>라인클리어(R):</strong> 드래그 경로에 포함 시 해당 행 전체 비장애물 셀 소모</li>
+  <li>특수 아이템은 스킬/약점 매칭에 포함되지 않음</li>
+  <li>특수 아이템으로 소모된 속성 젬도 약점 진행에 기여</li>
+</ul>
+
+<h3>3.4 장애물</h3>
+<ul>
+  <li>적 공격 성공 시 보드의 일반 젬 1개가 파괴 불가 장애물로 변환</li>
+  <li>장애물 수 제한 없음</li>
+  <li>선택/소모/리필 효과 대상 불가</li>
+</ul>
+
+<h3>3.5 보드 비주얼</h3>
+<ul>
+  <li>보드 프레임: 반투명 어두운 배경 + 미세한 발광 테두리</li>
+  <li>드래그 경로: 이중 라인 (넓은 글로우 + 좁은 선명 선)</li>
+  <li>젬: 판타지 보석 스타일 텍스처 + 선택 시 하이라이트 링 + 스케일업</li>
+</ul>
+
+<!-- 4. 캐릭터 -->
+<h2>4. 캐릭터 시스템</h2>
+
+<h3>4.1 파티 구성</h3>
+<ul>
+  <li>전체 로스터: 5명 중 1~4명 선택</li>
+  <li>전투 중 드래그 완료마다 자동 순환</li>
+  <li>사망한 캐릭터는 순환에서 제외</li>
+</ul>
+
+<h3>4.2 캐릭터 목록</h3>
+<table>
+  <tr><th>캐릭터</th><th>속성</th><th>HP</th><th>공격력</th><th>역할</th></tr>
+  <tr><td>Ember Guard</td><td><span class="tag tag-fire">Fire</span></td><td>1200</td><td>180</td><td>DPS</td></tr>
+  <tr><td>Tide Arcanist</td><td><span class="tag tag-water">Water</span></td><td>800</td><td>250</td><td>마법사</td></tr>
+  <tr><td>Wildwood Ranger</td><td><span class="tag tag-grass">Grass</span></td><td>1000</td><td>200</td><td>레인저</td></tr>
+  <tr><td>Dawn Paladin</td><td><span class="tag tag-light">Light</span></td><td>1500</td><td>150</td><td>탱커</td></tr>
+  <tr><td>Umbral Blade</td><td><span class="tag tag-dark">Dark</span></td><td>900</td><td>300</td><td>암살자</td></tr>
+</table>
+
+<h3>4.3 스킬 시스템</h3>
+<ul>
+  <li>캐릭터당 <strong>3개 스킬</strong> 보유</li>
+  <li>전투 중 활성 캐릭터의 스킬 패널에서 스킬 선택 가능</li>
+  <li>각 스킬: 고유 이름 + 요구 젬 시퀀스(3개) + 데미지 배율</li>
+  <li>선택된 스킬이 시퀀스 매칭, 컷인 텍스트, 데미지 배율 결정</li>
+</ul>
+
+<h3>4.4 스킬 상세</h3>
+<div class="char-grid">
+  <div class="char-card" style="border-color: #ff444444;">
+    <h4 style="color: #ff6b6b;">Ember Guard <span class="tag tag-fire">Fire</span></h4>
+    <div class="char-stats">HP 1200 / ATK 180</div>
+    <div class="skill-row"><strong>Blazing Cleave</strong> F-F-W &middot; 3.0x</div>
+    <div class="skill-row"><strong>Ember Rush</strong> F-W-F &middot; 2.4x</div>
+    <div class="skill-row"><strong>Guard Break</strong> F-F-F &middot; 3.8x</div>
+  </div>
+  <div class="char-card" style="border-color: #4488ff44;">
+    <h4 style="color: #6baaff;">Tide Arcanist <span class="tag tag-water">Water</span></h4>
+    <div class="char-stats">HP 800 / ATK 250</div>
+    <div class="skill-row"><strong>Glacial Bloom</strong> W-W-L &middot; 3.5x</div>
+    <div class="skill-row"><strong>Tidal Lance</strong> W-L-W &middot; 2.7x</div>
+    <div class="skill-row"><strong>Arcane Tide</strong> W-W-W &middot; 4.0x</div>
+  </div>
+  <div class="char-card" style="border-color: #44cc4444;">
+    <h4 style="color: #6bdd6b;">Wildwood Ranger <span class="tag tag-grass">Grass</span></h4>
+    <div class="char-stats">HP 1000 / ATK 200</div>
+    <div class="skill-row"><strong>Thorn Volley</strong> N-D-N &middot; 2.5x</div>
+    <div class="skill-row"><strong>Snare Shot</strong> N-N-D &middot; 3.1x</div>
+    <div class="skill-row"><strong>Wild Barrage</strong> N-N-N &middot; 3.6x</div>
+  </div>
+  <div class="char-card" style="border-color: #ffee4444;">
+    <h4 style="color: #ffe066;">Dawn Paladin <span class="tag tag-light">Light</span></h4>
+    <div class="char-stats">HP 1500 / ATK 150</div>
+    <div class="skill-row"><strong>Radiant Oath</strong> L-L-F &middot; 2.8x</div>
+    <div class="skill-row"><strong>Sunward Smite</strong> L-F-L &middot; 3.2x</div>
+    <div class="skill-row"><strong>Dawn Shelter</strong> L-L-L &middot; 3.7x</div>
+  </div>
+  <div class="char-card" style="border-color: #aa44cc44;">
+    <h4 style="color: #cc88ee;">Umbral Blade <span class="tag tag-dark">Dark</span></h4>
+    <div class="char-stats">HP 900 / ATK 300</div>
+    <div class="skill-row"><strong>Midnight Cut</strong> D-D-D &middot; 4.0x</div>
+    <div class="skill-row"><strong>Shade Step</strong> D-F-D &middot; 3.2x</div>
+    <div class="skill-row"><strong>Eclipse Fang</strong> D-L-D &middot; 3.4x</div>
+  </div>
+</div>
+
+<h3>4.5 스킬 컷인 연출</h3>
+<ul>
+  <li>스킬 발동 시 활성 캐릭터의 대형 초상화가 화면에 페이드인/아웃</li>
+  <li>전투 흐름을 멈추지 않고 오버레이로 표시</li>
+  <li>카메라 플래시 + 미세 셰이크 효과 동반</li>
+</ul>
+
+<!-- 5. 적 시스템 -->
+<h2>5. 적 시스템</h2>
+
+<h3>5.1 적 종류</h3>
+<table>
+  <tr><th>적</th><th>HP</th><th>공격력</th><th>간격</th><th>약점 요구</th></tr>
+  <tr>
+    <td>Moss Imp</td><td>500</td><td>60</td><td>4초</td>
+    <td><span class="tag tag-fire">F</span>x2 <span class="tag tag-grass">N</span>x1</td>
+  </tr>
+  <tr>
+    <td>Iron Brute</td><td>1200</td><td>120</td><td>5초</td>
+    <td><span class="tag tag-water">W</span>x2 <span class="tag tag-light">L</span>x3</td>
+  </tr>
+  <tr>
+    <td>Grave Warden</td><td>2000</td><td>180</td><td>6초</td>
+    <td><span class="tag tag-light">L</span>x2 <span class="tag tag-fire">F</span>x2 <span class="tag tag-water">W</span>x2</td>
+  </tr>
+  <tr>
+    <td>Cinder Wisp</td><td>800</td><td>200</td><td>3초</td>
+    <td><span class="tag tag-water">W</span>x3 <span class="tag tag-dark">D</span>x2</td>
+  </tr>
+  <tr>
+    <td>Night Maw</td><td>3000</td><td>250</td><td>7초</td>
+    <td><span class="tag tag-light">L</span>x3 <span class="tag tag-grass">N</span>x2 <span class="tag tag-fire">F</span>x3</td>
+  </tr>
+</table>
+
+<h3>5.2 적 공격 메커니즘</h3>
+<ul>
+  <li>각 적은 독립적인 공격 타이머 보유</li>
+  <li>공격 게이지가 <strong>1/3 속도</strong>로 충전 (느리지만 강력)</li>
+  <li>공격 성공 시 <strong>3배 데미지</strong> + 보드에 장애물 1개 생성</li>
+  <li>공격 대상: 랜덤 생존 캐릭터</li>
+</ul>
+
+<h3>5.3 약점(Weakness) 시스템</h3>
+<div class="section-card">
+  <ul>
+    <li>각 적은 특정 속성 젬의 <strong>색상-수량</strong> 조합 요구</li>
+    <li><strong>순서 무관</strong>, 파괴된 속성 젬이 생존한 모든 적의 약점에 누적</li>
+    <li>약점 UI: 색상별 그룹화 + 진행 카운트 (예: <code>1/3</code>)</li>
+    <li>약점 완료 시: 대량 데미지 + 타이머 리셋 + 진행도 초기화</li>
+  </ul>
+</div>
+
+<h3>5.4 스테이지 HP 스케일링</h3>
+<ul>
+  <li>적 기본 HP는 데이터상 고정</li>
+  <li>전투 시 스테이지별 <strong>1.75배 지수 성장</strong> 적용</li>
+  <li>공식: <code>실제HP = 기본HP x 1.75^(stageIndex)</code></li>
+</ul>
+
+<!-- 6. 스테이지 -->
+<h2>6. 스테이지</h2>
+<table>
+  <tr><th>ID</th><th>이름</th><th>적 구성</th></tr>
+  <tr><td>1</td><td>First Trial</td><td>Moss Imp x3</td></tr>
+  <tr><td>2</td><td>Brute Ambush</td><td>Moss Imp + Iron Brute + Moss Imp</td></tr>
+  <tr><td>3</td><td>Cinder Crossing</td><td>Cinder Wisp + Iron Brute</td></tr>
+  <tr><td>4</td><td>Warden Gate</td><td>Grave Warden</td></tr>
+  <tr><td>5</td><td>Abyssal Stand</td><td>Night Maw + Grave Warden</td></tr>
+</table>
+
+<!-- 7. 데미지 계산 -->
+<h2>7. 데미지 계산</h2>
+<div class="section-card">
+  <pre>스킬 데미지 = 캐릭터.공격력 x 스킬.배율
+기본 공격 데미지 = 캐릭터.공격력
+적당 데미지 = 총 데미지 / 생존 적 수</pre>
+  <p>적 공격: 랜덤 생존 캐릭터 대상 (3배 데미지) + 보드에 장애물 생성</p>
+</div>
+
+<!-- 8. 비주얼 시스템 -->
+<h2>8. 비주얼 시스템</h2>
+
+<h3>8.1 아트 방향</h3>
+<p>모바일 판타지 RPG 스타일. 어두운 마법 전장 배경 위에 화려한 보석 젬과 캐릭터 초상화.</p>
+
+<h3>8.2 에셋 전략 (프로시저럴 생성)</h3>
+<ul>
+  <li><strong>배경:</strong> 그라데이션 + 악센트 컬러 (메뉴/전투 2종)</li>
+  <li><strong>젬:</strong> 속성별 컬러 보석 텍스처 (Phaser Graphics)</li>
+  <li><strong>캐릭터 초상화:</strong> 속성 컬러 기반 프로시저럴 포트레이트</li>
+  <li><strong>적 초상화:</strong> 적 컬러 기반 프로시저럴 몬스터 아트</li>
+  <li><strong>UI 패널:</strong> 카드/슬롯 프레임 텍스처</li>
+</ul>
+
+<h3>8.3 에셋 매니페스트</h3>
+<table>
+  <tr><th>카테고리</th><th>텍스처 키 패턴</th><th>예시</th></tr>
+  <tr><td>젬</td><td><code>gem-{type}</code></td><td>gem-fire, gem-water</td></tr>
+  <tr><td>캐릭터</td><td><code>portrait-{id}</code></td><td>portrait-warrior, portrait-mage</td></tr>
+  <tr><td>적</td><td><code>enemy-{id}</code></td><td>enemy-goblin, enemy-orc</td></tr>
+  <tr><td>배경</td><td>고정 키</td><td>bg-menu, bg-battle</td></tr>
+  <tr><td>UI</td><td>고정 키</td><td>ui-stage-card, ui-party-card</td></tr>
+</table>
+
+<h3>8.4 화면별 비주얼</h3>
+<ul>
+  <li><strong>스테이지 선택:</strong> 판타지 메뉴 배경 + 스테이지 카드 + 호버 틴트</li>
+  <li><strong>파티 선택:</strong> 캐릭터 카드 + 초상화 + 속성 프레임 + 선택 틴트 + 스탯</li>
+  <li><strong>전투:</strong> 전투 배경 + 적 초상화/HP/게이지/약점 + 캐릭터 초상화/HP/스킬패널 + 보석 젬 보드</li>
+</ul>
+
+<!-- 9. 화면 레이아웃 -->
+<h2>9. 화면 레이아웃</h2>
+<div class="layout-box">
++-----------------------------+<br>
+|&nbsp; [적 영역]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+|&nbsp; 초상화&nbsp; HP바&nbsp; 공격게이지&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+|&nbsp; 약점 진행: Fire 1/2, ...&nbsp;&nbsp;&nbsp;&nbsp;|<br>
++-----------------------------+<br>
+|&nbsp; [캐릭터 영역]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+|&nbsp; 초상화 x4 (활성 강조)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+|&nbsp; 스킬 선택 패널&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+|&nbsp; [스킬1] [스킬2] [스킬3]&nbsp;&nbsp;&nbsp;&nbsp;|<br>
++-----------------------------+<br>
+|&nbsp; [헥사 퍼즐 보드 5x6]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+|&nbsp; 보드 프레임 + 드래그 글로우&nbsp;&nbsp;|<br>
++-----------------------------+
+</div>
+
+<!-- 10. 배치 시스템 -->
+<h2>10. 배치 시스템 (개발 예정)</h2>
+<table>
+  <tr><th>종류</th><th>이름</th></tr>
+  <tr><td>건물</td><td>Barracks, Arrow Tower, Mana Well</td></tr>
+  <tr><td>영웅</td><td>Field Captain, Crystal Seer, Stone Sentinel</td></tr>
+</table>
+<p>현재 UI 스캐폴딩 완료, 상세 메커닉 구현 예정.</p>
+
+<!-- 11. 기술 스택 -->
+<h2>11. 기술 스택</h2>
+<table>
+  <tr><th>레이어</th><th>기술</th></tr>
+  <tr><td>게임 엔진</td><td>Phaser.js 3.80.1</td></tr>
+  <tr><td>언어</td><td>JavaScript (ES Modules)</td></tr>
+  <tr><td>빌드</td><td>Vite 5.2.0</td></tr>
+  <tr><td>테스트</td><td>Vitest 1.6.0</td></tr>
+  <tr><td>데스크톱</td><td>Electron (portable exe)</td></tr>
+  <tr><td>모바일</td><td>Capacitor (예정)</td></tr>
+</table>
+
+<h3>11.1 프로젝트 구조</h3>
+<pre>src/
+├── main.js
+├── constants.js              # 젬 타입, 보드 설정, UI 폰트
+├── scenes/
+│   ├── BootScene.js          # 프로시저럴 에셋 생성 + 씬 전환
+│   ├── StageSelectScene.js   # 스테이지 선택
+│   ├── PartySelectScene.js   # 파티 편성 (1~4인)
+│   └── BattleScene.js        # 핵심 전투 씬
+├── objects/
+│   ├── HexBoard.js           # 헥사 퍼즐 보드
+│   ├── Gem.js                # 젬 오브젝트
+│   ├── CharacterSlot.js      # 캐릭터 슬롯 (초상화 + HP)
+│   └── EnemySlot.js          # 적 슬롯 (초상화 + HP + 타이머 + 약점)
+├── data/
+│   ├── characters.js         # 캐릭터 정의 + 스킬 배열
+│   ├── enemies.js            # 적 데이터 + 약점
+│   └── stages.js             # 스테이지 데이터
+└── systems/
+    ├── AssetManifest.js      # 에셋 키/ID 관리
+    ├── ArtFactory.js         # 프로시저럴 텍스처 생성
+    ├── CombatBoard.js        # 전투 수학 (스케일링, 약점, 리필)
+    ├── SequenceChecker.js    # 드래그 시퀀스 검증
+    └── GemSpawner.js         # 파티 기반 젬 확률 관리</pre>
+
+<!-- 12. 로드맵 -->
+<h2>12. 로드맵</h2>
+
+<h3>v0.1.0 (현재) - MVP + 아트 업그레이드</h3>
+<div class="roadmap-item done">헥사곤 퍼즐 보드 (5x6)</div>
+<div class="roadmap-item done">5캐릭터 / 5적 / 5스테이지</div>
+<div class="roadmap-item done">실시간 전투 시스템</div>
+<div class="roadmap-item done">젬 소모 + 즉시 리필 시스템</div>
+<div class="roadmap-item done">특수 아이템 (폭탄, 라인클리어)</div>
+<div class="roadmap-item done">장애물 시스템 (적 공격 시 생성)</div>
+<div class="roadmap-item done">약점 누적 시스템 (색상-수량 기반)</div>
+<div class="roadmap-item done">캐릭터당 3스킬 선택 시스템</div>
+<div class="roadmap-item done">스킬 컷인 애니메이션</div>
+<div class="roadmap-item done">스테이지 HP 스케일링 (1.75x 지수)</div>
+<div class="roadmap-item done">프로시저럴 아트 에셋 (배경, 젬, 초상화)</div>
+<div class="roadmap-item done">판타지 RPG 스타일 UI (카드, 프레임, 글로우)</div>
+<div class="roadmap-item done">블록 교체 애니메이션</div>
+<div class="roadmap-item done">Electron 패키징</div>
+
+<h3>v0.2.0 - 콘텐츠 확장</h3>
+<div class="roadmap-item">배치 시스템 구현</div>
+<div class="roadmap-item">추가 캐릭터/적/스테이지</div>
+<div class="roadmap-item">장비/강화 시스템</div>
+<div class="roadmap-item">업적/보상</div>
+
+<h3>v0.3.0 - 폴리시</h3>
+<div class="roadmap-item">외부 아트 에셋 교체</div>
+<div class="roadmap-item">사운드/BGM</div>
+<div class="roadmap-item">모바일 빌드 (Capacitor)</div>
+<div class="roadmap-item">밸런스 조정</div>
+
+</div>
+</body>
+</html>
