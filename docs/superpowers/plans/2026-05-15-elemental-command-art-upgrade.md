@@ -473,3 +473,38 @@ If no fixes were required, do not create an empty commit.
 - Spec coverage: the plan covers background art, gem art, character portraits, enemy portraits, richer slots, menu polish, battle polish, skill feedback, tests, and browser verification.
 - Completion scan: no unresolved marker words or open-ended completion instructions remain.
 - Type consistency: texture keys use `gem-${id}`, `portrait-${id}`, and `enemy-${id}` consistently across manifest, factory, scenes, and objects.
+
+## Completion Update
+
+- After implementation, rebuild the web bundle with `npm run build`.
+- Keep `vite.config.js` configured with `base: './'` so the built HTML loads assets correctly when Electron opens it with `loadFile`.
+- Refresh the Electron packaging input at `C:\Temp\ec-electron\dist` from the latest project `dist`.
+- Rebuild the portable executable with `npm run dist` from `C:\Temp\ec-electron`.
+- Verify the updated executable exists at `release/ElementalCommand_v0.1.0_portable.exe` and copy it to the project root mirror `ElementalCommand_v0.1.0_portable.exe`.
+- Treat these executable and plan updates as part of the completion checklist for future project work.
+
+## Executable Launch Fix
+
+- The portable executable previously opened a blank/non-working window because Vite emitted absolute asset paths such as `/assets/index-*.js`.
+- Electron loads the game with `win.loadFile(...)`, so absolute browser paths do not resolve to the packaged `dist/assets` folder.
+- `vite.config.js` now sets `base: './'`, and `tests/ViteConfig.test.js` locks this in.
+- The rebuilt `dist/index.html` now references `./assets/index-*.js`, which works inside the packaged executable.
+
+## Combat Board Update
+
+- Dragged gems are now consumed after attack resolution and refilled from the current party-weighted gem distribution.
+- Refilled cells can become special items: `bomb` for adjacent clears and `lineClear` for row clears.
+- Special items and consumed extra cells contribute elemental gems to cumulative enemy weakness progress.
+- Enemies now display weakness gems, track progress without order, take heavy weakness damage when completed, and reset their attack gauge.
+- Enemy attack gauges fill at one third speed, while successful enemy attacks deal triple damage.
+- Successful enemy attacks convert one normal elemental gem into an unbreakable obstacle with no limit.
+- Skill activation now shows a large fading character portrait cut-in.
+- Block replacement now uses a visible burst ring, old-gem fade/expand, and new-gem pop-in so refills and obstacle conversions read clearly during battle.
+
+## Combat Progression Update
+
+- Enemy max HP now scales exponentially by stage at 1.75x per stage step while base enemy data remains unchanged.
+- Enemy weakness lists now behave as color-count requirements; duplicate colors define how many of that gem must be destroyed before the weakness breaks.
+- Weakness UI now groups duplicate colors and shows progress counts such as `1/3`.
+- Each character now has up to three selectable skills, and the active character's skill panel shows each skill name with its required gem sequence.
+- The currently selected skill controls sequence matching, skill damage multiplier, and cut-in text.

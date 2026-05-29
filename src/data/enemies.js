@@ -5,6 +5,7 @@ export const ENEMIES = {
     maxHp: 500,
     attack: 60,
     attackInterval: 4000,
+    weaknessGems: ['fire', 'fire', 'grass'],
     color: 0x88cc44
   },
   orc: {
@@ -13,6 +14,7 @@ export const ENEMIES = {
     maxHp: 1200,
     attack: 120,
     attackInterval: 5000,
+    weaknessGems: ['water', 'water', 'light', 'light', 'light'],
     color: 0x667733
   },
   darkKnight: {
@@ -21,6 +23,7 @@ export const ENEMIES = {
     maxHp: 2000,
     attack: 180,
     attackInterval: 6000,
+    weaknessGems: ['light', 'light', 'fire', 'fire', 'water', 'water'],
     color: 0x334455
   },
   fireSpirit: {
@@ -29,6 +32,7 @@ export const ENEMIES = {
     maxHp: 800,
     attack: 200,
     attackInterval: 3000,
+    weaknessGems: ['water', 'water', 'water', 'dark', 'dark'],
     color: 0xff6600
   },
   shadowBeast: {
@@ -37,6 +41,7 @@ export const ENEMIES = {
     maxHp: 3000,
     attack: 250,
     attackInterval: 7000,
+    weaknessGems: ['light', 'light', 'light', 'grass', 'grass', 'fire', 'fire', 'fire'],
     color: 0x220033
   }
 }

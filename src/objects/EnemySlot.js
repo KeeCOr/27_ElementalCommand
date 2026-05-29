@@ -1,7 +1,11 @@
 import Phaser from 'phaser'
-import { UI_FONT } from '../constants.js'
+import { GEM_COLORS, UI_FONT } from '../constants.js'
+import { accumulateWeakness, getWeaknessRequirements } from '../systems/CombatBoard.js'
 
 const SLOT_W = 104
+const ATTACK_INTERVAL_MULTIPLIER = 3
+const ATTACK_DAMAGE_MULTIPLIER = 3
+const WEAKNESS_DAMAGE_RATIO = 0.35
 
 export default class EnemySlot extends Phaser.GameObjects.Container {
   constructor(scene, x, y, enemyData) {
@@ -10,6 +14,7 @@ export default class EnemySlot extends Phaser.GameObjects.Container {
     this.hp = enemyData.maxHp
     this.attackTimer = 0
     this.alive = true
+    this.weaknessProgress = {}
 
     this.aura = scene.add.graphics()
     this.aura.fillStyle(enemyData.color, 0.16).fillCircle(0, -18, 52)
@@ -42,21 +47,51 @@ export default class EnemySlot extends Phaser.GameObjects.Container {
     this.timerBar.setScale(0, 1)
     this.add(this.timerBar)
 
+    this.weaknessRequirements = getWeaknessRequirements(enemyData.weaknessGems)
+    this.weaknessIcons = this.weaknessRequirements.map((entry, i, list) => {
+      const x = (i - (list.length - 1) / 2) * 16
+      const icon = scene.add.circle(x, 68, 5, GEM_COLORS[entry.type], 0.25)
+        .setStrokeStyle(1, GEM_COLORS[entry.type], 0.95)
+      this.add(icon)
+      const progressText = scene.add.text(x, 79, `0/${entry.count}`, {
+        fontSize: '7px',
+        fontFamily: UI_FONT,
+        color: '#d9f2ff'
+      }).setOrigin(0.5)
+      this.add(progressText)
+      return { icon, progressText, ...entry }
+    })
+
     scene.add.existing(this)
   }
 
   update(delta) {
     if (!this.alive) return null
     this.attackTimer += delta
-    const progress = Math.min(this.attackTimer / this.enemyData.attackInterval, 1)
+    const interval = this.enemyData.attackInterval * ATTACK_INTERVAL_MULTIPLIER
+    const progress = Math.min(this.attackTimer / interval, 1)
     this.timerBar.setScale(progress, 1)
     this.body.rotation = Math.sin(this.attackTimer / 260) * 0.025
-    if (this.attackTimer >= this.enemyData.attackInterval) {
+    if (this.attackTimer >= interval) {
       this.attackTimer = 0
       this.timerBar.setScale(0, 1)
-      return this.enemyData.attack
+      return this.enemyData.attack * ATTACK_DAMAGE_MULTIPLIER
     }
     return null
+  }
+
+  applyWeakness(destroyedTypes) {
+    if (!this.alive || !this.enemyData.weaknessGems?.length) return false
+    const result = accumulateWeakness(this.enemyData.weaknessGems, this.weaknessProgress, destroyedTypes)
+    this.weaknessProgress = result.progress
+    this._updateWeaknessIcons()
+    if (!result.complete) return false
+
+    this.attackTimer = 0
+    this.timerBar.setScale(0, 1)
+    this.takeDamage(Math.ceil(this.enemyData.maxHp * WEAKNESS_DAMAGE_RATIO))
+    this.scene.cameras.main.flash(150, 120, 230, 255)
+    return true
   }
 
   takeDamage(amount) {
@@ -65,7 +100,7 @@ export default class EnemySlot extends Phaser.GameObjects.Container {
     this.hpBar.setScale(ratio, 1)
     this.scene.tweens.add({
       targets: this.body,
-      x: { from: -4, to: 0 },
+      x: { from: 0, to: -4 },
       duration: 90,
       yoyo: true
     })
@@ -80,5 +115,16 @@ export default class EnemySlot extends Phaser.GameObjects.Container {
       })
     }
     return this.hp <= 0
+  }
+
+  _updateWeaknessIcons() {
+    for (const entry of this.weaknessIcons) {
+      const progress = Math.min(this.weaknessProgress[entry.type] || 0, entry.count)
+      const filled = progress >= entry.count
+      entry.icon.setFillStyle(GEM_COLORS[entry.type], filled ? 0.95 : 0.25 + (progress / entry.count) * 0.45)
+      entry.icon.setScale(filled ? 1.18 : 1)
+      entry.progressText.setText(`${progress}/${entry.count}`)
+      entry.progressText.setColor(filled ? '#ffffff' : '#d9f2ff')
+    }
   }
 }

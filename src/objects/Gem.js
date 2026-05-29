@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { GEM_LABEL, BOARD_CONFIG, UI_FONT } from '../constants.js'
+import { BOARD_CONFIG } from '../constants.js'
 
 const { hexRadius } = BOARD_CONFIG
 
@@ -15,16 +15,6 @@ export default class Gem extends Phaser.GameObjects.Container {
 
     this.highlightRing = scene.add.graphics()
     this.add(this.highlightRing)
-
-    this.label = scene.add.text(0, 1, GEM_LABEL[gemType], {
-      fontSize: '14px',
-      fontFamily: UI_FONT,
-      color: '#ffffff',
-      fontStyle: 'bold',
-      stroke: '#111827',
-      strokeThickness: 3
-    }).setOrigin(0.5)
-    this.add(this.label)
 
     scene.add.existing(this)
   }

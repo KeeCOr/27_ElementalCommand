@@ -4,31 +4,23 @@ import CharacterSlot from '../objects/CharacterSlot.js'
 import EnemySlot from '../objects/EnemySlot.js'
 import { buildWeights } from '../systems/GemSpawner.js'
 import { checkSequence } from '../systems/SequenceChecker.js'
-import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT, GEM_COLORS } from '../constants.js'
+import { getCharacterSkills, isElementGem, resolveBattleParty, scaleEnemyForStage } from '../systems/CombatBoard.js'
+import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT } from '../constants.js'
 import { ENEMIES } from '../data/enemies.js'
 import { STAGES } from '../data/stages.js'
+import { CHARACTERS } from '../data/characters.js'
+import { BUILDINGS, HEROES } from '../data/deployables.js'
 
-const ELEMENT_HEX = {
-  fire: '#ff6655', water: '#55aaff', grass: '#55cc66', light: '#ffee55', dark: '#cc77ff'
-}
-const ELEMENT_EMOJI = {
-  fire: '🔥', water: '💧', grass: '🌿', light: '⚡', dark: '🌑'
-}
-// Affinity pairs shown in HUD: attacker → defender (strong)
-const HUD_AFFINITY = [
-  { atk: 'fire', def: 'grass' },
-  { atk: 'water', def: 'fire' },
-  { atk: 'grass', def: 'water' },
-  { atk: 'light', def: 'dark' },
-  { atk: 'dark', def: 'light' }
-]
+const PARTY_Y = 268
+const SEQ_HINT_Y = 328
+const SKILL_PANEL_Y = 356
 
 export default class BattleScene extends Phaser.Scene {
   constructor() { super({ key: 'BattleScene' }) }
 
   init(data) {
     this.stageId = data.stageId || 1
-    this.party = data.party || []
+    this.party = resolveBattleParty(data.party, CHARACTERS)
     this.battleEnded = false
   }
 
@@ -51,13 +43,13 @@ export default class BattleScene extends Phaser.Scene {
     const weights = buildWeights(this.party)
     this.board = new HexBoard(this, weights)
     this.board.on('dragComplete', this._onDragComplete, this)
+    this._setupDeployables()
+    this.selectedSkillByCharacter = new Map()
 
     this.activeIndex = 0
     this.characterSlots[0].setActive(true)
-    this._updateSequenceHint()
-
-    // ── Element affinity mini HUD ───────────────────────────────────────────
-    this._buildAffinityHUD()
+    this._setupSkillPanel()
+    this._updateSkillPanel()
 
     this.resultText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, '', {
       fontSize: '38px',
@@ -81,7 +73,7 @@ export default class BattleScene extends Phaser.Scene {
     const count = enemyList.length
     const startX = GAME_WIDTH / 2 - ((count - 1) * 126) / 2
     this.enemySlots = enemyList.map((e, i) =>
-      new EnemySlot(this, startX + i * 126, 144, ENEMIES[e.id])
+      new EnemySlot(this, startX + i * 126, 144, scaleEnemyForStage(ENEMIES[e.id], this.stageId))
     )
   }
 
@@ -89,11 +81,11 @@ export default class BattleScene extends Phaser.Scene {
     const count = this.party.length
     const startX = GAME_WIDTH / 2 - ((count - 1) * 106) / 2
     this.characterSlots = this.party.map((charData, i) =>
-      new CharacterSlot(this, startX + i * 106, 312, charData)
+      new CharacterSlot(this, startX + i * 106, PARTY_Y, charData)
     )
 
-    this.seqHint = this.add.text(GAME_WIDTH / 2, 389, '', {
-      fontSize: '13px',
+    this.seqHint = this.add.text(GAME_WIDTH / 2, SEQ_HINT_Y, '', {
+      fontSize: '12px',
       fontFamily: UI_FONT,
       color: '#fff1a8',
       backgroundColor: '#101729aa',
@@ -101,27 +93,163 @@ export default class BattleScene extends Phaser.Scene {
     }).setOrigin(0.5)
   }
 
+  _setupSkillPanel() {
+    this.skillCards = []
+    this.skillPanel = this.add.image(GAME_WIDTH / 2, SKILL_PANEL_Y, 'ui-skill-tray')
+      .setDepth(8)
+  }
+
+  _updateSkillPanel() {
+    for (const entry of this.skillCards) {
+      entry.card.destroy()
+      entry.hitZone.destroy()
+      entry.name.destroy()
+      entry.gems.destroy()
+    }
+    this.skillCards = []
+
+    const active = this.characterSlots[this.activeIndex]
+    const skills = getCharacterSkills(active.characterData)
+    const selectedIndex = this.selectedSkillByCharacter.get(active.characterData.id) || 0
+    const selectedSkill = skills[selectedIndex] || skills[0]
+    this.seqHint.setText(`${active.characterData.name} - Selected: ${selectedSkill.name}`)
+
+    skills.forEach((skill, i) => {
+      const x = GAME_WIDTH / 2 - ((skills.length - 1) * 112) / 2 + i * 112
+      const selected = skill.id === selectedSkill.id
+      const card = this.add.image(x, SKILL_PANEL_Y, selected ? 'ui-skill-card-selected' : 'ui-skill-card')
+        .setDepth(9)
+      const hitZone = this.add.zone(x, SKILL_PANEL_Y, 104, 46)
+        .setDepth(11)
+        .setInteractive({ useHandCursor: true })
+      const name = this.add.text(x, SKILL_PANEL_Y - 8, skill.name, {
+        fontSize: '9px',
+        fontFamily: UI_FONT,
+        color: '#ffffff',
+        fontStyle: 'bold'
+      }).setOrigin(0.5).setDepth(10)
+      const gems = this.add.text(x, SKILL_PANEL_Y + 9, skill.requiredGems.map(type => GEM_LABEL[type]).join(' > '), {
+        fontSize: '10px',
+        fontFamily: UI_FONT,
+        color: '#fff1a8'
+      }).setOrigin(0.5).setDepth(10)
+
+      hitZone.on('pointerover', () => card.setTint(selected ? 0xd4ffe8 : 0xcfefff))
+      hitZone.on('pointerout', () => card.clearTint())
+      hitZone.on('pointerdown', () => {
+        this.selectedSkillByCharacter.set(active.characterData.id, i)
+        this._updateSkillPanel()
+      })
+      this.skillCards.push({ card, hitZone, name, gems })
+    })
+  }
+
+  _setupDeployables() {
+    this.selectedDeployable = null
+    this.deployableCards = []
+
+    this.add.image(GAME_WIDTH / 2, 800, 'ui-deploy-tray')
+
+    this.add.text(42, 756, 'Deployables', {
+      fontSize: '12px',
+      fontFamily: UI_FONT,
+      color: '#8de8ff',
+      fontStyle: 'bold'
+    })
+
+    const roster = [...BUILDINGS, ...HEROES]
+    roster.forEach((deployable, i) => this._createDeployableCard(deployable, 44 + i * 78, 800))
+
+    this.deployHint = this.add.text(GAME_WIDTH / 2, 732, 'Select a building or hero to ready placement', {
+      fontSize: '12px',
+      fontFamily: UI_FONT,
+      color: '#b7c7ff',
+      backgroundColor: '#101729aa',
+      padding: { x: 10, y: 4 },
+      wordWrap: { width: 360 }
+    }).setOrigin(0.5)
+  }
+
+  _createDeployableCard(deployable, x, y) {
+    const card = this.add.image(x, y, 'ui-deploy-card')
+    const hitZone = this.add.zone(x, y, 70, 70)
+      .setInteractive({ useHandCursor: true })
+    const textureKey = deployable.kind === 'building'
+      ? `building-${deployable.id}`
+      : `hero-${deployable.id}`
+
+    this.add.image(x, y - 14, textureKey).setDisplaySize(32, 32)
+
+    this.add.text(x, y + 9, deployable.name, {
+      fontSize: '8px',
+      fontFamily: UI_FONT,
+      color: '#ffffff',
+      fontStyle: 'bold',
+      wordWrap: { width: 62 }
+    }).setOrigin(0.5)
+
+    const meta = deployable.kind === 'building'
+      ? `Cost ${deployable.cost}`
+      : `${deployable.cost}/${deployable.cooldown}s`
+    this.add.text(x, y + 27, meta, {
+      fontSize: '8px',
+      fontFamily: UI_FONT,
+      color: deployable.kind === 'building' ? '#8de8ff' : '#fff1a8'
+    }).setOrigin(0.5)
+
+    const entry = { card, hitZone, deployable }
+    this.deployableCards.push(entry)
+    hitZone.on('pointerover', () => card.setTint(0xcfefff))
+    hitZone.on('pointerout', () => {
+      card.clearTint()
+      this._refreshDeployableCard(entry)
+    })
+    hitZone.on('pointerdown', () => this._selectDeployable(entry))
+  }
+
+  _selectDeployable(entry) {
+    this.selectedDeployable = entry.deployable
+    this.deployableCards.forEach(cardEntry => this._refreshDeployableCard(cardEntry))
+    this.deployHint.setText(`Ready: ${entry.deployable.name} - ${entry.deployable.description}`)
+  }
+
+  _refreshDeployableCard(entry) {
+    const active = this.selectedDeployable?.id === entry.deployable.id
+    entry.card.setTexture(active ? 'ui-deploy-card-selected' : 'ui-deploy-card')
+  }
+
   _onDragComplete(path) {
     if (this.battleEnded) return
     const activeSlot = this.characterSlots[this.activeIndex]
-    const gemTypes = path.map(p => p.gemType)
+    const gemTypes = path.map(p => p.gemType).filter(isElementGem)
 
-    if (gemTypes.length === 0) {
+    if (path.length === 0) {
       this._advanceCharacter()
       return
     }
 
-    const skillFired = checkSequence(gemTypes, activeSlot.characterData.skillSequence)
-    if (skillFired) this._fireSkill(activeSlot)
+    const skill = this._selectedSkillFor(activeSlot.characterData)
+    const skillFired = checkSequence(gemTypes, skill.requiredGems)
+    if (skillFired) this._fireSkill(activeSlot, skill)
     else this._fireBasicAttack(activeSlot)
 
+    const consumed = this.board.consumePath(path)
+    this._applyWeaknessProgress(consumed.map(cell => cell.gemType).filter(isElementGem))
     this._advanceCharacter()
   }
 
-  _fireSkill(charSlot) {
-    const dmg = Math.floor(charSlot.characterData.attack * charSlot.characterData.skillMultiplier)
+  _selectedSkillFor(characterData) {
+    const skills = getCharacterSkills(characterData)
+    const index = this.selectedSkillByCharacter.get(characterData.id) || 0
+    return skills[index] || skills[0]
+  }
+
+  _fireSkill(charSlot, skill) {
+    const dmg = Math.floor(charSlot.characterData.attack * skill.multiplier)
     this._dealDamageToEnemies(dmg)
     this.cameras.main.flash(250, 255, 238, 150)
+    this.cameras.main.shake(120, 0.004)
+    this._showSkillCutIn(charSlot, skill)
   }
 
   _fireBasicAttack(charSlot) {
@@ -141,7 +269,44 @@ export default class BattleScene extends Phaser.Scene {
     if (alive.length === 0) return
     const target = alive[Math.floor(Math.random() * alive.length)]
     target.takeDamage(dmg)
+    this.board.addObstacle()
     this._checkDefeat()
+  }
+
+  _applyWeaknessProgress(destroyedTypes) {
+    if (destroyedTypes.length === 0) return
+    for (const slot of this.enemySlots) {
+      slot.applyWeakness(destroyedTypes)
+    }
+    this._checkVictory()
+  }
+
+  _showSkillCutIn(charSlot, skill) {
+    const portrait = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, `portrait-${charSlot.characterData.id}`)
+      .setDisplaySize(250, 250)
+      .setAlpha(0)
+      .setDepth(18)
+    const name = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 112, skill.name, {
+      fontSize: '22px',
+      fontFamily: UI_FONT,
+      color: '#ffffff',
+      fontStyle: 'bold',
+      stroke: '#101729',
+      strokeThickness: 5
+    }).setOrigin(0.5).setAlpha(0).setDepth(19)
+
+    this.tweens.add({
+      targets: [portrait, name],
+      alpha: { from: 0, to: 0.88 },
+      scale: { from: 0.82, to: 1.08 },
+      duration: 180,
+      yoyo: true,
+      hold: 260,
+      onComplete: () => {
+        portrait.destroy()
+        name.destroy()
+      }
+    })
   }
 
   _advanceCharacter() {
@@ -154,13 +319,7 @@ export default class BattleScene extends Phaser.Scene {
     } while (this.characterSlots[this.activeIndex].isDead() && attempts < this.characterSlots.length)
 
     this.characterSlots[this.activeIndex].setActive(true)
-    this._updateSequenceHint()
-  }
-
-  _updateSequenceHint() {
-    const active = this.characterSlots[this.activeIndex]
-    const seq = active.characterData.skillSequence.map(t => GEM_LABEL[t]).join(' > ')
-    this.seqHint.setText(`${active.characterData.name}: ${seq}`)
+    this._updateSkillPanel()
   }
 
   _checkVictory() {
@@ -179,52 +338,5 @@ export default class BattleScene extends Phaser.Scene {
       this.resultText.setText('Defeat...').setVisible(true)
       this.time.delayedCall(2500, () => this.scene.start('StageSelectScene'))
     }
-  }
-
-  // ── Element affinity mini HUD (bottom-right, collapsible) ─────────────────
-  _buildAffinityHUD() {
-    const panelW = 162
-    const panelH = 124
-    const px = GAME_WIDTH - panelW - 8
-    const py = GAME_HEIGHT - panelH - 8
-
-    // Panel background (low alpha to not clutter battle view)
-    const bg = this.add.graphics().setDepth(10)
-    bg.fillStyle(0x060c1a, 0.78).fillRoundedRect(px, py, panelW, panelH, 7)
-    bg.lineStyle(1.5, 0x3a5a8c, 0.55).strokeRoundedRect(px + 1, py + 1, panelW - 2, panelH - 2, 7)
-
-    this.add.text(px + panelW / 2, py + 10, 'AFFINITY', {
-      fontSize: '9px', fontFamily: UI_FONT, color: '#8899bb', fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(10)
-
-    HUD_AFFINITY.forEach((pair, i) => {
-      const rowY = py + 24 + i * 19
-      const atkHex = ELEMENT_HEX[pair.atk] || '#ffffff'
-      const defHex = ELEMENT_HEX[pair.def] || '#ffffff'
-      const atkColor = Phaser.Display.Color.HexStringToColor(atkHex).color
-      const defColor = Phaser.Display.Color.HexStringToColor(defHex).color
-
-      const g = this.add.graphics().setDepth(10)
-      // Attacker dot
-      g.fillStyle(atkColor, 0.9).fillCircle(px + 16, rowY + 6, 6)
-      // Arrow
-      g.lineStyle(1.5, 0x88cc88, 0.9)
-        .lineBetween(px + 24, rowY + 6, px + 36, rowY + 6)
-      g.fillStyle(0x88cc88, 1).fillTriangle(px + 40, rowY + 6, px + 34, rowY + 2, px + 34, rowY + 10)
-      // Defender dot
-      g.fillStyle(defColor, 0.9).fillCircle(px + 50, rowY + 6, 6)
-
-      this.add.text(px + 16, rowY + 6, ELEMENT_EMOJI[pair.atk] || '', {
-        fontSize: '7px', fontFamily: UI_FONT
-      }).setOrigin(0.5).setDepth(10)
-
-      this.add.text(px + 50, rowY + 6, ELEMENT_EMOJI[pair.def] || '', {
-        fontSize: '7px', fontFamily: UI_FONT
-      }).setOrigin(0.5).setDepth(10)
-
-      this.add.text(px + 62, rowY + 1, `${pair.atk} → ${pair.def}`, {
-        fontSize: '8.5px', fontFamily: UI_FONT, color: '#c8d8f0'
-      }).setDepth(10)
-    })
   }
 }
