@@ -4,9 +4,24 @@ import CharacterSlot from '../objects/CharacterSlot.js'
 import EnemySlot from '../objects/EnemySlot.js'
 import { buildWeights } from '../systems/GemSpawner.js'
 import { checkSequence } from '../systems/SequenceChecker.js'
-import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT } from '../constants.js'
+import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT, GEM_COLORS } from '../constants.js'
 import { ENEMIES } from '../data/enemies.js'
 import { STAGES } from '../data/stages.js'
+
+const ELEMENT_HEX = {
+  fire: '#ff6655', water: '#55aaff', grass: '#55cc66', light: '#ffee55', dark: '#cc77ff'
+}
+const ELEMENT_EMOJI = {
+  fire: '🔥', water: '💧', grass: '🌿', light: '⚡', dark: '🌑'
+}
+// Affinity pairs shown in HUD: attacker → defender (strong)
+const HUD_AFFINITY = [
+  { atk: 'fire', def: 'grass' },
+  { atk: 'water', def: 'fire' },
+  { atk: 'grass', def: 'water' },
+  { atk: 'light', def: 'dark' },
+  { atk: 'dark', def: 'light' }
+]
 
 export default class BattleScene extends Phaser.Scene {
   constructor() { super({ key: 'BattleScene' }) }
@@ -40,6 +55,9 @@ export default class BattleScene extends Phaser.Scene {
     this.activeIndex = 0
     this.characterSlots[0].setActive(true)
     this._updateSequenceHint()
+
+    // ── Element affinity mini HUD ───────────────────────────────────────────
+    this._buildAffinityHUD()
 
     this.resultText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, '', {
       fontSize: '38px',
@@ -161,5 +179,52 @@ export default class BattleScene extends Phaser.Scene {
       this.resultText.setText('Defeat...').setVisible(true)
       this.time.delayedCall(2500, () => this.scene.start('StageSelectScene'))
     }
+  }
+
+  // ── Element affinity mini HUD (bottom-right, collapsible) ─────────────────
+  _buildAffinityHUD() {
+    const panelW = 162
+    const panelH = 124
+    const px = GAME_WIDTH - panelW - 8
+    const py = GAME_HEIGHT - panelH - 8
+
+    // Panel background (low alpha to not clutter battle view)
+    const bg = this.add.graphics().setDepth(10)
+    bg.fillStyle(0x060c1a, 0.78).fillRoundedRect(px, py, panelW, panelH, 7)
+    bg.lineStyle(1.5, 0x3a5a8c, 0.55).strokeRoundedRect(px + 1, py + 1, panelW - 2, panelH - 2, 7)
+
+    this.add.text(px + panelW / 2, py + 10, 'AFFINITY', {
+      fontSize: '9px', fontFamily: UI_FONT, color: '#8899bb', fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(10)
+
+    HUD_AFFINITY.forEach((pair, i) => {
+      const rowY = py + 24 + i * 19
+      const atkHex = ELEMENT_HEX[pair.atk] || '#ffffff'
+      const defHex = ELEMENT_HEX[pair.def] || '#ffffff'
+      const atkColor = Phaser.Display.Color.HexStringToColor(atkHex).color
+      const defColor = Phaser.Display.Color.HexStringToColor(defHex).color
+
+      const g = this.add.graphics().setDepth(10)
+      // Attacker dot
+      g.fillStyle(atkColor, 0.9).fillCircle(px + 16, rowY + 6, 6)
+      // Arrow
+      g.lineStyle(1.5, 0x88cc88, 0.9)
+        .lineBetween(px + 24, rowY + 6, px + 36, rowY + 6)
+      g.fillStyle(0x88cc88, 1).fillTriangle(px + 40, rowY + 6, px + 34, rowY + 2, px + 34, rowY + 10)
+      // Defender dot
+      g.fillStyle(defColor, 0.9).fillCircle(px + 50, rowY + 6, 6)
+
+      this.add.text(px + 16, rowY + 6, ELEMENT_EMOJI[pair.atk] || '', {
+        fontSize: '7px', fontFamily: UI_FONT
+      }).setOrigin(0.5).setDepth(10)
+
+      this.add.text(px + 50, rowY + 6, ELEMENT_EMOJI[pair.def] || '', {
+        fontSize: '7px', fontFamily: UI_FONT
+      }).setOrigin(0.5).setDepth(10)
+
+      this.add.text(px + 62, rowY + 1, `${pair.atk} → ${pair.def}`, {
+        fontSize: '8.5px', fontFamily: UI_FONT, color: '#c8d8f0'
+      }).setDepth(10)
+    })
   }
 }

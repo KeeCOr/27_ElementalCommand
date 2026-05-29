@@ -1,4 +1,4 @@
-import { GAME_WIDTH, GAME_HEIGHT } from '../constants.js'
+import { GAME_WIDTH, GAME_HEIGHT, GEM_COLORS } from '../constants.js'
 
 const GEM_PALETTES = {
   fire: { main: 0xf25a3d, dark: 0x7b1f24, light: 0xffd18a, accent: 0xff8f2e },
@@ -32,6 +32,30 @@ export function createArtAssets(scene) {
   Object.entries(GEM_PALETTES).forEach(([type, palette]) => createGemTexture(scene, type, palette))
   Object.entries(CHARACTER_ART).forEach(([id, palette]) => createCharacterTexture(scene, id, palette))
   Object.entries(ENEMY_ART).forEach(([id, palette]) => createEnemyTexture(scene, id, palette))
+  createElementBadgeTextures(scene)
+  createAffinityPanelTexture(scene)
+}
+
+function createElementBadgeTextures(scene) {
+  const LABELS = { fire: 'F', water: 'W', grass: 'N', light: 'L', dark: 'D' }
+  Object.entries(GEM_COLORS).forEach(([type, color]) => {
+    const key = `badge-${type}`
+    const g = scene.add.graphics()
+    g.fillStyle(color, 0.9).fillCircle(13, 13, 13)
+    g.lineStyle(2, 0xffffff, 0.55).strokeCircle(13, 13, 12)
+    g.generateTexture(key, 26, 26)
+    g.destroy()
+    // Text is added dynamically at scene level
+    void LABELS[type]
+  })
+}
+
+function createAffinityPanelTexture(scene) {
+  const g = scene.add.graphics()
+  g.fillStyle(0x0c1120, 0.93).fillRoundedRect(0, 0, 440, 164, 10)
+  g.lineStyle(2, 0x4a7bc8, 0.6).strokeRoundedRect(1, 1, 438, 162, 10)
+  g.generateTexture('ui-affinity-panel', 440, 164)
+  g.destroy()
 }
 
 function createBackground(scene, key, topColor, bottomColor, accentColor) {
