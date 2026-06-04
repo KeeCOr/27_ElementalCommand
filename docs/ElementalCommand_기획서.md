@@ -381,3 +381,39 @@ src/
 | 버전 | 날짜 | 내용 |
 |------|------|------|
 | v0.1.0 | 2026-05-29 | UX 온보딩 추가 — 속성 상성표 HUD 추가, 파티 선택 화면 속성 뱃지 표시, 전투 중 키 힌트 오버레이 |
+
+<!-- APPLIED_RESOURCES_START -->
+## 적용 리소스
+
+> 자동 갱신: 2026-06-04. 코드, 씬, 프리팹, 설정 파일에서 참조가 확인된 리소스 기준입니다.
+
+- 이미지/스프라이트: `public/assets/bg-battle.png`, `public/assets/bg-menu.png`, `public/assets/character-portraits-sheet.png`, `public/assets/deployables-sheet.png`, `public/assets/enemy-portraits-sheet.png`, `public/assets/gem-items-sheet.png`
+
+메모:
+- 리소스 후보 10개 중 자동 참조 확인 6개.
+<!-- APPLIED_RESOURCES_END -->
+
+<!-- RESOURCE_PREVIEWS_START -->
+## 공유용 이미지 미리보기
+
+> 자동 갱신: 2026-06-04. 공유 시 문서와 함께 아래 이미지 경로가 포함되어야 합니다.
+
+![27_EC character-portraits-sheet](../public/assets/character-portraits-sheet.png)
+- `public/assets/character-portraits-sheet.png`
+
+![27_EC enemy-portraits-sheet](../public/assets/enemy-portraits-sheet.png)
+- `public/assets/enemy-portraits-sheet.png`
+
+![27_EC bg-battle](../public/assets/bg-battle.png)
+- `public/assets/bg-battle.png`
+
+![27_EC bg-menu](../public/assets/bg-menu.png)
+- `public/assets/bg-menu.png`
+
+![27_EC deployables-sheet](../public/assets/deployables-sheet.png)
+- `public/assets/deployables-sheet.png`
+
+![27_EC gem-items-sheet](../public/assets/gem-items-sheet.png)
+- `public/assets/gem-items-sheet.png`
+
+<!-- RESOURCE_PREVIEWS_END -->
