@@ -2,7 +2,7 @@
 
 ## 프로젝트
 - 이름: ElementalCommand
-- 버전: 0.1.0
+- 버전: 0.2.0
 - 스택: Phaser 3 + Vite (브라우저 전용, Electron 없음)
 - 빌드: npx vite build
 - 테스트: npx vitest run

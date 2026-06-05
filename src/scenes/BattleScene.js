@@ -9,7 +9,6 @@ import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT } from '../constants.js'
 import { ENEMIES } from '../data/enemies.js'
 import { STAGES } from '../data/stages.js'
 import { CHARACTERS } from '../data/characters.js'
-import { BUILDINGS, HEROES } from '../data/deployables.js'
 
 const PARTY_Y = 268
 const SEQ_HINT_Y = 328
@@ -43,7 +42,6 @@ export default class BattleScene extends Phaser.Scene {
     const weights = buildWeights(this.party)
     this.board = new HexBoard(this, weights)
     this.board.on('dragComplete', this._onDragComplete, this)
-    this._setupDeployables()
     this.selectedSkillByCharacter = new Map()
 
     this.activeIndex = 0
@@ -142,80 +140,6 @@ export default class BattleScene extends Phaser.Scene {
       })
       this.skillCards.push({ card, hitZone, name, gems })
     })
-  }
-
-  _setupDeployables() {
-    this.selectedDeployable = null
-    this.deployableCards = []
-
-    this.add.image(GAME_WIDTH / 2, 800, 'ui-deploy-tray')
-
-    this.add.text(42, 756, 'Deployables', {
-      fontSize: '12px',
-      fontFamily: UI_FONT,
-      color: '#8de8ff',
-      fontStyle: 'bold'
-    })
-
-    const roster = [...BUILDINGS, ...HEROES]
-    roster.forEach((deployable, i) => this._createDeployableCard(deployable, 44 + i * 78, 800))
-
-    this.deployHint = this.add.text(GAME_WIDTH / 2, 732, 'Select a building or hero to ready placement', {
-      fontSize: '12px',
-      fontFamily: UI_FONT,
-      color: '#b7c7ff',
-      backgroundColor: '#101729aa',
-      padding: { x: 10, y: 4 },
-      wordWrap: { width: 360 }
-    }).setOrigin(0.5)
-  }
-
-  _createDeployableCard(deployable, x, y) {
-    const card = this.add.image(x, y, 'ui-deploy-card')
-    const hitZone = this.add.zone(x, y, 70, 70)
-      .setInteractive({ useHandCursor: true })
-    const textureKey = deployable.kind === 'building'
-      ? `building-${deployable.id}`
-      : `hero-${deployable.id}`
-
-    this.add.image(x, y - 14, textureKey).setDisplaySize(32, 32)
-
-    this.add.text(x, y + 9, deployable.name, {
-      fontSize: '8px',
-      fontFamily: UI_FONT,
-      color: '#ffffff',
-      fontStyle: 'bold',
-      wordWrap: { width: 62 }
-    }).setOrigin(0.5)
-
-    const meta = deployable.kind === 'building'
-      ? `Cost ${deployable.cost}`
-      : `${deployable.cost}/${deployable.cooldown}s`
-    this.add.text(x, y + 27, meta, {
-      fontSize: '8px',
-      fontFamily: UI_FONT,
-      color: deployable.kind === 'building' ? '#8de8ff' : '#fff1a8'
-    }).setOrigin(0.5)
-
-    const entry = { card, hitZone, deployable }
-    this.deployableCards.push(entry)
-    hitZone.on('pointerover', () => card.setTint(0xcfefff))
-    hitZone.on('pointerout', () => {
-      card.clearTint()
-      this._refreshDeployableCard(entry)
-    })
-    hitZone.on('pointerdown', () => this._selectDeployable(entry))
-  }
-
-  _selectDeployable(entry) {
-    this.selectedDeployable = entry.deployable
-    this.deployableCards.forEach(cardEntry => this._refreshDeployableCard(cardEntry))
-    this.deployHint.setText(`Ready: ${entry.deployable.name} - ${entry.deployable.description}`)
-  }
-
-  _refreshDeployableCard(entry) {
-    const active = this.selectedDeployable?.id === entry.deployable.id
-    entry.card.setTexture(active ? 'ui-deploy-card-selected' : 'ui-deploy-card')
   }
 
   _onDragComplete(path) {

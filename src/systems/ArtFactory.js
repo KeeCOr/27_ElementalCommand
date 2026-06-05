@@ -1,11 +1,9 @@
 import { GAME_WIDTH, GAME_HEIGHT } from '../constants.js'
 import {
   ART_BACKGROUNDS,
-  ART_BUILDINGS,
   ART_CHARACTERS,
   ART_ENEMIES,
   ART_GEMS,
-  ART_HEROES,
   ART_SHEET_SOURCES,
   ART_SOURCE_IMAGES
 } from './AssetManifest.js'
@@ -37,17 +35,6 @@ const ENEMY_ART = {
   shadowBeast: { main: 0x241032, trim: 0x8f4bd8, eye: 0xff4cc7 }
 }
 
-const BUILDING_ART = {
-  barracks: { main: 0x9f6a45, trim: 0xe6c28b, roof: 0xc94b3f },
-  arrowTower: { main: 0x8b7351, trim: 0xf0d38a, roof: 0x3f8cff },
-  manaWell: { main: 0x4c7f93, trim: 0xa7f3ff, roof: 0x6b4fd8 }
-}
-
-const HERO_ART = {
-  captain: { main: 0xe65a43, trim: 0xffd37a, skin: 0xf0b178 },
-  seer: { main: 0x6b4fd8, trim: 0xb8ecff, skin: 0xdca879 },
-  sentinel: { main: 0x7a8796, trim: 0xd6f2ff, skin: 0xb7a98a }
-}
 
 export function createArtAssets(scene) {
   if (scene.textures.exists('bg-menu')) return
@@ -69,8 +56,6 @@ export function createArtAssets(scene) {
   createObstacleTexture(scene)
   ART_CHARACTERS.forEach(character => createCharacterTexture(scene, character.id, CHARACTER_ART[character.id]))
   ART_ENEMIES.forEach(enemy => createEnemyTexture(scene, enemy.id, ENEMY_ART[enemy.id]))
-  ART_BUILDINGS.forEach(building => createBuildingTexture(scene, building.id, BUILDING_ART[building.id]))
-  ART_HEROES.forEach(hero => createHeroTexture(scene, hero.id, HERO_ART[hero.id]))
 }
 
 function hasCompleteImageArtPack(scene) {
@@ -124,8 +109,7 @@ export function validateArtManifestCoverage({
   assertArtDefinitions('gem', gems, GEM_PALETTES)
   assertArtDefinitions('character', characters, CHARACTER_ART)
   assertArtDefinitions('enemy', enemies, ENEMY_ART)
-  assertArtDefinitions('building', ART_BUILDINGS, BUILDING_ART)
-  assertArtDefinitions('hero', ART_HEROES, HERO_ART)
+
 }
 
 function assertArtDefinitions(label, entries, definitions) {
@@ -208,33 +192,6 @@ function createPanelTextures(scene) {
     alpha: 0.98
   })
   g.generateTexture('ui-skill-card-selected', 104, 38)
-  g.clear()
-  drawFrame(g, 70, 70, {
-    fill: 0x10182b,
-    edge: 0xffffff,
-    accent: 0x8de8ff,
-    glow: 0x172846,
-    alpha: 0.94
-  })
-  g.generateTexture('ui-deploy-card', 70, 70)
-  g.clear()
-  drawFrame(g, 70, 70, {
-    fill: 0x245b4c,
-    edge: 0x87ffca,
-    accent: 0xfff1a8,
-    glow: 0x2d765f,
-    alpha: 0.98
-  })
-  g.generateTexture('ui-deploy-card-selected', 70, 70)
-  g.clear()
-  drawFrame(g, 430, 96, {
-    fill: 0x07101f,
-    edge: 0x58d7ff,
-    accent: 0xfff1a8,
-    glow: 0x0d2038,
-    alpha: 0.72
-  })
-  g.generateTexture('ui-deploy-tray', 430, 96)
   g.clear()
   drawFrame(g, 356, 44, {
     fill: 0x07101f,
@@ -333,40 +290,6 @@ function createEnemyTexture(scene, id, palette) {
   g.lineStyle(4, 0x000000, 0.25).strokeEllipse(55, 52, 54, 68)
   g.lineStyle(3, palette.trim, 0.8).lineBetween(38, 68, 72, 68)
   g.generateTexture(`enemy-${id}`, 110, 110)
-  g.destroy()
-}
-
-function createBuildingTexture(scene, id, palette) {
-  const g = scene.add.graphics()
-  g.fillStyle(0x000000, 0.3).fillEllipse(44, 74, 58, 14)
-  g.fillStyle(palette.main, 1).fillRoundedRect(19, 34, 50, 40, 5)
-  g.fillStyle(palette.roof, 1).fillTriangle(15, 38, 44, 13, 73, 38)
-  g.lineStyle(3, palette.trim, 0.9).strokeTriangle(15, 38, 44, 13, 73, 38)
-  g.fillStyle(0x101729, 0.75).fillRoundedRect(36, 52, 15, 22, 3)
-  if (id === 'arrowTower') {
-    g.fillStyle(palette.trim, 1).fillRect(27, 20, 34, 9)
-    g.lineStyle(3, palette.trim, 1).lineBetween(44, 18, 44, 5)
-  }
-  if (id === 'manaWell') {
-    g.fillStyle(0x58d7ff, 0.85).fillCircle(44, 51, 12)
-    g.fillStyle(0xffffff, 0.55).fillCircle(39, 46, 4)
-  }
-  g.generateTexture(`building-${id}`, 88, 88)
-  g.destroy()
-}
-
-function createHeroTexture(scene, id, palette) {
-  const g = scene.add.graphics()
-  g.fillStyle(0x000000, 0.3).fillEllipse(44, 74, 52, 14)
-  g.fillStyle(palette.main, 0.25).fillCircle(44, 42, 34)
-  g.lineStyle(3, palette.trim, 0.8).strokeCircle(44, 42, 31)
-  g.fillStyle(palette.main, 1).fillRoundedRect(27, 40, 34, 32, 8)
-  g.fillStyle(palette.skin, 1).fillCircle(44, 30, 13)
-  g.fillStyle(0x101729, 0.95).fillCircle(39, 30, 2).fillCircle(49, 30, 2)
-  if (id === 'captain') g.lineStyle(4, palette.trim, 1).lineBetween(25, 64, 66, 35)
-  if (id === 'seer') g.fillStyle(0x58d7ff, 0.85).fillCircle(44, 55, 7)
-  if (id === 'sentinel') g.fillStyle(palette.trim, 0.9).fillRoundedRect(56, 41, 10, 25, 4)
-  g.generateTexture(`hero-${id}`, 88, 88)
   g.destroy()
 }
 
