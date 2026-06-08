@@ -380,6 +380,7 @@ src/
 
 | 버전 | 날짜 | 내용 |
 |------|------|------|
+| v0.2.0 | 2026-06-08 | Monster portrait sheet background removed with transparent edge mask; executable bundle refreshed without launching it. |
 | v0.1.0 | 2026-05-29 | UX 온보딩 추가 — 속성 상성표 HUD 추가, 파티 선택 화면 속성 뱃지 표시, 전투 중 키 힌트 오버레이 |
 
 <!-- APPLIED_RESOURCES_START -->
@@ -391,6 +392,7 @@ src/
 
 메모:
 - 리소스 후보 10개 중 자동 참조 확인 6개.
+- 2026-06-08: `public/assets/enemy-portraits-sheet.png` updated with alpha-channel portrait-edge masking. Monster portraits now drop the square sheet background when cropped into `enemy-{id}` textures.
 <!-- APPLIED_RESOURCES_END -->
 
 <!-- RESOURCE_PREVIEWS_START -->

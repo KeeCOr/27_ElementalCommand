@@ -508,3 +508,10 @@ If no fixes were required, do not create an empty commit.
 - Weakness UI now groups duplicate colors and shows progress counts such as `1/3`.
 - Each character now has up to three selectable skills, and the active character's skill panel shows each skill name with its required gem sequence.
 - The currently selected skill controls sequence matching, skill damage multiplier, and cut-in text.
+
+## Monster Portrait Background Update
+
+- `public/assets/enemy-portraits-sheet.png` was regenerated with an alpha channel and transparent portrait-edge masking.
+- The game already crops this sheet into `enemy-{id}` runtime textures, so the updated monster portraits are picked up by the existing BootScene/ArtFactory asset flow.
+- Original source backup: `docs/enemy-portraits-sheet-with-background.png`.
+- Visual QA preview: `docs/enemy-portraits-transparent-preview.png`.

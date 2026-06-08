@@ -13,6 +13,7 @@ import { CHARACTERS } from '../data/characters.js'
 const PARTY_Y = 268
 const SEQ_HINT_Y = 328
 const SKILL_PANEL_Y = 356
+const DEPLOYABLE_FRAME_KEYS = ['ui-deploy-card', 'ui-deploy-card-selected']
 
 export default class BattleScene extends Phaser.Scene {
   constructor() { super({ key: 'BattleScene' }) }

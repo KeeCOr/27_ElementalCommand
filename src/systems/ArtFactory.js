@@ -1,9 +1,11 @@
 import { GAME_WIDTH, GAME_HEIGHT } from '../constants.js'
 import {
   ART_BACKGROUNDS,
+  ART_BUILDINGS,
   ART_CHARACTERS,
   ART_ENEMIES,
   ART_GEMS,
+  ART_HEROES,
   ART_SHEET_SOURCES,
   ART_SOURCE_IMAGES
 } from './AssetManifest.js'
@@ -35,6 +37,18 @@ const ENEMY_ART = {
   shadowBeast: { main: 0x241032, trim: 0x8f4bd8, eye: 0xff4cc7 }
 }
 
+const BUILDING_ART = {
+  barracks: { main: 0x8f5a3c, trim: 0xf0c078, roof: 0x5a2f24 },
+  arrowTower: { main: 0x5f7182, trim: 0xb9d7ee, roof: 0x33485a },
+  manaWell: { main: 0x306a82, trim: 0x77e7ff, roof: 0x183548 }
+}
+
+const HERO_ART = {
+  captain: { main: 0xd88a3d, trim: 0xffe0a3, mark: 0x5a2f18 },
+  seer: { main: 0x6f5fd8, trim: 0xe2d4ff, mark: 0x2b174e },
+  sentinel: { main: 0x73808d, trim: 0xd7e2ec, mark: 0x27313a }
+}
+
 
 export function createArtAssets(scene) {
   if (scene.textures.exists('bg-menu')) return
@@ -56,6 +70,8 @@ export function createArtAssets(scene) {
   createObstacleTexture(scene)
   ART_CHARACTERS.forEach(character => createCharacterTexture(scene, character.id, CHARACTER_ART[character.id]))
   ART_ENEMIES.forEach(enemy => createEnemyTexture(scene, enemy.id, ENEMY_ART[enemy.id]))
+  ART_BUILDINGS.forEach(building => createBuildingTexture(scene, building.id, BUILDING_ART[building.id]))
+  ART_HEROES.forEach(hero => createHeroTexture(scene, hero.id, HERO_ART[hero.id]))
 }
 
 function hasCompleteImageArtPack(scene) {
@@ -104,12 +120,15 @@ function createSquareSheetTexture(scene, sourceKey, targetKey, index, frameCount
 export function validateArtManifestCoverage({
   gems = ART_GEMS,
   characters = ART_CHARACTERS,
-  enemies = ART_ENEMIES
+  enemies = ART_ENEMIES,
+  buildings = ART_BUILDINGS,
+  heroes = ART_HEROES
 } = {}) {
   assertArtDefinitions('gem', gems, GEM_PALETTES)
   assertArtDefinitions('character', characters, CHARACTER_ART)
   assertArtDefinitions('enemy', enemies, ENEMY_ART)
-
+  assertArtDefinitions('building', buildings, BUILDING_ART)
+  assertArtDefinitions('hero', heroes, HERO_ART)
 }
 
 function assertArtDefinitions(label, entries, definitions) {
@@ -192,6 +211,33 @@ function createPanelTextures(scene) {
     alpha: 0.98
   })
   g.generateTexture('ui-skill-card-selected', 104, 38)
+  g.clear()
+  drawFrame(g, 92, 40, {
+    fill: 0x162236,
+    edge: 0x77e7ff,
+    accent: 0xffd46a,
+    glow: 0x223f5c,
+    alpha: 0.9
+  })
+  g.generateTexture('ui-deploy-card', 92, 40)
+  g.clear()
+  drawFrame(g, 92, 40, {
+    fill: 0x245345,
+    edge: 0x8dffca,
+    accent: 0xfff1a8,
+    glow: 0x2e725d,
+    alpha: 0.98
+  })
+  g.generateTexture('ui-deploy-card-selected', 92, 40)
+  g.clear()
+  drawFrame(g, 356, 48, {
+    fill: 0x07101f,
+    edge: 0xffd46a,
+    accent: 0x77e7ff,
+    glow: 0x172a3f,
+    alpha: 0.66
+  })
+  g.generateTexture('ui-deploy-tray', 356, 48)
   g.clear()
   drawFrame(g, 356, 44, {
     fill: 0x07101f,
@@ -290,6 +336,28 @@ function createEnemyTexture(scene, id, palette) {
   g.lineStyle(4, 0x000000, 0.25).strokeEllipse(55, 52, 54, 68)
   g.lineStyle(3, palette.trim, 0.8).lineBetween(38, 68, 72, 68)
   g.generateTexture(`enemy-${id}`, 110, 110)
+  g.destroy()
+}
+
+function createBuildingTexture(scene, id, palette) {
+  const g = scene.add.graphics()
+  g.fillStyle(0x000000, 0.3).fillEllipse(48, 78, 62, 14)
+  g.fillStyle(palette.main, 1).fillRoundedRect(24, 38, 52, 38, 6)
+  g.fillStyle(palette.roof, 1).fillTriangle(18, 40, 48, 16, 82, 40)
+  g.lineStyle(3, palette.trim, 0.82).strokeRoundedRect(24, 38, 52, 38, 6)
+  g.fillStyle(palette.trim, 0.75).fillRect(43, 54, 10, 22)
+  g.generateTexture(`building-${id}`, 96, 96)
+  g.destroy()
+}
+
+function createHeroTexture(scene, id, palette) {
+  const g = scene.add.graphics()
+  g.fillStyle(0x000000, 0.28).fillEllipse(48, 82, 56, 14)
+  g.fillStyle(palette.main, 1).fillRoundedRect(28, 42, 40, 36, 10)
+  g.fillStyle(palette.trim, 1).fillCircle(48, 34, 17)
+  g.fillStyle(palette.mark, 1).fillCircle(42, 34, 3).fillCircle(56, 34, 3)
+  g.lineStyle(4, palette.trim, 0.9).lineBetween(30, 66, 68, 44)
+  g.generateTexture(`hero-${id}`, 96, 96)
   g.destroy()
 }
 

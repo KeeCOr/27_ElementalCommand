@@ -11,7 +11,7 @@ All images are saved under `public/assets/`.
 | `bg-menu.png` | Stage select and party select background | Vertical 480:854 fantasy command room/menu backdrop. |
 | `bg-battle.png` | Battle scene background | Vertical 480:854 ruined magical battlefield with readable center play area. |
 | `character-portraits-sheet.png` | Playable commander portraits | Five portraits in order: Ember Guard, Tide Arcanist, Wildwood Ranger, Dawn Paladin, Umbral Blade. |
-| `enemy-portraits-sheet.png` | Monster portraits | Five portraits in order: Moss Imp, Iron Brute, Grave Warden, Cinder Wisp, Night Maw. |
+| `enemy-portraits-sheet.png` | Monster portraits | Five portraits in order: Moss Imp, Iron Brute, Grave Warden, Cinder Wisp, Night Maw. Updated 2026-06-08 with transparent portrait-edge masking so the square monster background is removed in-game. |
 | `gem-items-sheet.png` | Puzzle gem and board item art | Fire, water, nature, light, dark, bomb, row-clear, obstacle. |
 | `deployables-sheet.png` | Building and deployable hero icons | Barracks, Arrow Tower, Mana Well, Field Captain, Crystal Seer, Stone Sentinel. |
 
@@ -20,3 +20,4 @@ All images are saved under `public/assets/`.
 - Current game code still generates Phaser procedural textures in `src/systems/ArtFactory.js`.
 - These generated images are the source art pack for replacing or supplementing those procedural textures.
 - Sprite sheets should be cropped into individual runtime textures before wiring them into `BootScene`/`ArtFactory`.
+- `enemy-portraits-sheet.png` now includes an alpha channel. The original background version is preserved at `docs/enemy-portraits-sheet-with-background.png`, and `docs/enemy-portraits-transparent-preview.png` shows the transparent-mask preview on a checkerboard.
