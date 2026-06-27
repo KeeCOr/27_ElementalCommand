@@ -1,613 +1,294 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Elemental Command 기획서</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Segoe UI', -apple-system, sans-serif;
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-    color: #e0e0e0;
-    line-height: 1.7;
-    padding: 40px 20px;
-  }
-  .container { max-width: 900px; margin: 0 auto; }
-  h1 {
-    text-align: center;
-    font-size: 2.4em;
-    background: linear-gradient(90deg, #ff6b35, #f7c948, #4ecdc4, #a78bfa, #6366f1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 10px;
-  }
-  .meta {
-    text-align: center;
-    color: #888;
-    margin-bottom: 40px;
-    font-size: 0.95em;
-  }
-  .meta span { margin: 0 12px; }
-  h2 {
-    color: #4ecdc4;
-    font-size: 1.5em;
-    margin: 40px 0 16px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #4ecdc433;
-  }
-  h3 {
-    color: #f7c948;
-    font-size: 1.15em;
-    margin: 24px 0 12px;
-  }
-  h4 {
-    color: #a78bfa;
-    font-size: 1.05em;
-    margin: 18px 0 8px;
-  }
-  p, li { margin-bottom: 8px; }
-  ul, ol { padding-left: 24px; }
-  .overview-box {
-    background: rgba(78, 205, 196, 0.08);
-    border: 1px solid #4ecdc444;
-    border-radius: 12px;
-    padding: 24px;
-    margin: 20px 0;
-    text-align: center;
-    font-size: 1.1em;
-  }
-  .flow-box {
-    background: rgba(163, 123, 250, 0.08);
-    border: 1px solid #a78bfa44;
-    border-radius: 10px;
-    padding: 16px 24px;
-    margin: 16px 0;
-    font-family: 'Consolas', monospace;
-    text-align: center;
-    font-size: 1.05em;
-    letter-spacing: 1px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 16px 0;
-    font-size: 0.95em;
-  }
-  th {
-    background: rgba(78, 205, 196, 0.15);
-    color: #4ecdc4;
-    padding: 10px 14px;
-    text-align: left;
-    border-bottom: 2px solid #4ecdc444;
-  }
-  td {
-    padding: 8px 14px;
-    border-bottom: 1px solid #ffffff11;
-  }
-  tr:hover td { background: rgba(255,255,255,0.03); }
-  code {
-    background: rgba(255,255,255,0.08);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Consolas', monospace;
-    font-size: 0.92em;
-  }
-  pre {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid #ffffff15;
-    border-radius: 8px;
-    padding: 16px;
-    overflow-x: auto;
-    font-family: 'Consolas', monospace;
-    font-size: 0.9em;
-    line-height: 1.5;
-    margin: 12px 0;
-  }
-  .tag {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 0.82em;
-    font-weight: 600;
-    margin: 2px;
-  }
-  .tag-fire { background: #ff444433; color: #ff6b6b; }
-  .tag-water { background: #4488ff33; color: #6baaff; }
-  .tag-grass { background: #44cc4433; color: #6bdd6b; }
-  .tag-light { background: #ffee4433; color: #ffe066; }
-  .tag-dark { background: #aa44cc33; color: #cc88ee; }
-  .section-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid #ffffff11;
-    border-radius: 12px;
-    padding: 24px;
-    margin: 16px 0;
-  }
-  .char-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-    margin: 16px 0;
-  }
-  .char-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid #ffffff15;
-    border-radius: 10px;
-    padding: 16px;
-  }
-  .char-card h4 { margin-top: 0; }
-  .char-stats { font-size: 0.9em; color: #aab7d8; margin: 6px 0; }
-  .skill-row { font-size: 0.88em; margin: 4px 0; color: #ccc; }
-  .skill-row strong { color: #f7c948; }
-  .roadmap-item {
-    padding: 6px 0;
-    padding-left: 28px;
-    position: relative;
-  }
-  .roadmap-item::before {
-    content: '';
-    position: absolute;
-    left: 6px;
-    top: 12px;
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    border: 2px solid #4ecdc4;
-  }
-  .roadmap-item.done::before {
-    background: #4ecdc4;
-  }
-  .layout-box {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid #ffffff15;
-    border-radius: 8px;
-    padding: 16px;
-    font-family: 'Consolas', monospace;
-    font-size: 0.88em;
-    line-height: 1.6;
-    margin: 12px 0;
-  }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ElementalCommand 기획서</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65;max-width:980px;margin:0 auto;padding:40px 24px;color:#20242a;background:#fafafa}
+    h1{font-size:34px;margin:0 0 8px} h2{font-size:24px;margin-top:34px;border-bottom:1px solid #ddd;padding-bottom:6px} h3{font-size:18px;margin-top:24px}
+    p,li,pre{font-size:15px} li{margin:5px 0} pre{white-space:pre-wrap;background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px 10px}
+    table{border-collapse:collapse;width:100%;margin:12px 0} th,td{border:1px solid #ddd;padding:8px 12px;text-align:left} th{background:#f5f5f5;font-weight:600}
+    .meta{color:#666;font-size:14px;margin-bottom:32px}
+    blockquote{border-left:4px solid #ddd;margin:12px 0;padding:8px 16px;color:#555;background:#fff;border-radius:0 8px 8px 0}
+    code{background:#f0f0f0;border-radius:4px;padding:2px 6px;font-size:13px}
+  </style>
 </head>
 <body>
-<div class="container">
 
-<h1>Elemental Command</h1>
-<div class="meta">
-  <span>v0.1.0</span>
-  <span>2026-05-29</span>
-  <span>실시간 퍼즐 배틀 RPG</span>
-  <span>480x854</span>
-</div>
+<h1>ElementalCommand 기획서 v0.2</h1>
+<p class="meta">원소 속성 젬을 드래그해 시퀀스를 완성하고, 실시간으로 밀려오는 적을 물리치는 퍼즐 배틀 게임.</p>
 
-<!-- 1. 게임 개요 -->
-<h2>플레이 미리보기</h2>
+<h2>문제 정의</h2>
+<p><strong>어떤 유저가:</strong> 모바일/PC 전략 게임을 즐기는 20~35세 코어 캐주얼 게이머</p>
+<p><strong>어떤 상황에서:</strong> 짧은 이동 시간이나 점심 시간(10~15분 세션), 또는 취침 전 가볍게 두세 판을 하고 싶을 때</p>
+<p><strong>어떤 게임적 욕구를 원하는가:</strong> 단순히 속성 상성을 "외우는" 것이 아니라, 매 턴 전장 상황을 읽고 어떤 원소 시퀀스를 선택할지 판단하는 <strong>전술적 쾌감</strong>을 원한다. 퍼즐의 손맛과 RPG 전투의 의미 있는 결과가 동시에 느껴지길 원한다.</p>
 
-<h3>플레이 미리보기</h3>
-<img src="./ElementalCommand_gameplay_preview.png" alt="플레이 미리보기" style="max-width:100%;border-radius:8px;margin:12px 0;">
+<h2>주 페르소나</h2>
+<p><strong>이름:</strong> 김재원 (가상)<br>
+<strong>나이:</strong> 28세<br>
+<strong>직업:</strong> IT 스타트업 개발자</p>
+<h3>현재 게임 습관</h3>
+<ul>
+  <li>퇴근 후 30분~1시간, 출퇴근 지하철에서 10분 내외로 플레이</li>
+  <li>퍼즐&amp;드래곤즈류의 젬 매칭 + RPG 조합을 좋아했지만, 최근 비슷한 패턴에 질림</li>
+  <li>"딱 한 판만 더"를 유발하는 짧고 긴장감 있는 전투를 선호</li>
+</ul>
+<h3>이 게임을 플레이하는 맥락</h3>
+<ul>
+  <li>복잡한 튜토리얼 없이 바로 전투 화면에서 무엇을 해야 하는지 직관적으로 파악</li>
+  <li>파티 편성→전투→결과 확인→재도전 사이클이 10분 안에 완결되어야 함</li>
+  <li>속성 상성과 스킬 시퀀스 조합을 스스로 발견하는 "아 이렇게 하면 되는구나" 순간을 즐김</li>
+</ul>
 
-<h2>1. 게임 개요</h2>
-<div class="overview-box">
-  헥사곤 보드 위의 젬을 드래그하여 시퀀스를 만들고,<br>
-  캐릭터의 스킬을 발동시켜 적을 처치하는 <strong>실시간 퍼즐 배틀 게임</strong>.<br>
-  <span class="tag tag-fire">Fire</span>
-  <span class="tag tag-water">Water</span>
-  <span class="tag tag-grass">Grass</span>
-  <span class="tag tag-light">Light</span>
-  <span class="tag tag-dark">Dark</span>
-  5가지 속성의 전략적 조합과 파티 편성이 핵심.
-</div>
+<h2>핵심 루프</h2>
+<pre>유저가 파티 4인을 편성 →
+전투 화면에서 젬을 드래그해 원소 시퀀스 완성 →
+아군 캐릭터가 순서대로 스킬 발동·적에게 속성 피해 →
+적 실시간 공격 게이지가 차기 전에 처치 →
+스테이지 클리어 후 보상 획득·다음 스테이지 해금 →
+더 강한 적을 위한 새 파티 편성으로 다시 루프 시작</pre>
 
-<!-- 2. 핵심 루프 -->
-<h2>2. 핵심 게임플레이 루프</h2>
-<div class="flow-box">
-  스테이지 선택 &rarr; 파티 편성(1~4명) &rarr; 전투 &rarr; 승리/패배 &rarr; 스테이지 선택
-</div>
+<h2>게임 소개</h2>
+<p><strong>ElementalCommand</strong>는 헥사고날 퍼즐 보드 위에서 원소 젬(불·물·풀·빛·어둠)을 드래그해 아군 캐릭터의 스킬 시퀀스를 완성하고, 실시간으로 공격 게이지를 채우는 적들을 물리치는 퍼즐 배틀 게임이다.</p>
+<p>한 번의 드래그 선택이 다음 장면의 위험도·보상·성장 방향으로 이어지는 구조가 핵심 매력이다.</p>
 
-<h3>2.1 전투 흐름</h3>
+<h2>주요 시스템</h2>
+<h3>퍼즐 보드</h3>
+<ul>
+  <li><strong>형태:</strong> 헥사고날 그리드 5열 × 6행</li>
+  <li><strong>젬 종류:</strong> 불(Fire), 물(Water), 풀(Grass), 빛(Light), 어둠(Dark) 5종</li>
+  <li><strong>젬 스폰 확률:</strong> 기본 각 20%, 파티 구성 캐릭터 속성에 따라 +5~10% 보정 (초과분은 나머지에서 균등 차감)</li>
+</ul>
+<h3>캐릭터 순환</h3>
+<ul>
+  <li>아군 4명이 A→B→C→D→A 순서로 순환</li>
+  <li>드래그 종료마다 다음 캐릭터로 교체 (스킬 발동 여부 무관)</li>
+  <li>현재 활성 캐릭터는 시각적으로 강조 (전면 배치 또는 발광 효과)</li>
+</ul>
+<h3>적 실시간 공격</h3>
+<ul>
+  <li>각 적은 개별 공격 타이머 보유</li>
+  <li>타이머가 차면 즉시 아군에게 공격 (별도 적 턴 없음)</li>
+  <li>적 공격 게이지를 UI에 실시간 표시</li>
+</ul>
+<h3>화면 흐름</h3>
 <ol>
-  <li>적이 스폰되고 독립적인 공격 타이머 시작 (실시간)</li>
-  <li>플레이어가 헥스 보드에서 인접 젬을 드래그하여 시퀀스 생성</li>
-  <li>시퀀스가 현재 캐릭터의 <strong>선택된 스킬</strong> 요구 젬과 일치하면 스킬 발동 (배율 + 컷인)</li>
-  <li>불일치 시 기본 공격 (배율 없음)</li>
-  <li>드래그된 젬은 소모 &rarr; 즉시 리필 (파티 가중치 기반)</li>
-  <li>드래그 완료 시 자동으로 다음 캐릭터로 전환</li>
-  <li>적 전멸 = 승리 / 파티 전멸 = 패배</li>
+  <li><strong>BootScene</strong> — 에셋 로딩</li>
+  <li><strong>StageSelectScene</strong> — 스테이지 선택</li>
+  <li><strong>PartySelectScene</strong> — 파티 편성 (4인)</li>
+  <li><strong>BattleScene</strong> — 핵심 전투 (HexBoard + Gem + Character)</li>
 </ol>
 
-<!-- 3. 보드 시스템 -->
-<h2>3. 헥사곤 보드 시스템</h2>
+<h2>핵심 재미</h2>
+<ul>
+  <li><strong>읽기 쉬운 상황 판단:</strong> 현재 위험한 요소(적 게이지)와 얻을 수 있는 보상이 한눈에 들어온다.</li>
+  <li><strong>직접적인 선택 피드백:</strong> 드래그 완료 즉시 전투 결과·자원·성장 상태가 변해 손맛을 만든다.</li>
+  <li><strong>누적되는 성장감:</strong> 반복 플레이가 단순 재시작이 아니라 다음 전략의 재료로 이어진다.</li>
+</ul>
+
+<h2>MVP 가설</h2>
 <table>
-  <tr><th>항목</th><th>내용</th></tr>
-  <tr><td>보드 크기</td><td>5열 x 6행 (헥사곤 그리드)</td></tr>
-  <tr><td>헥스 반경</td><td>36px</td></tr>
-  <tr><td>젬 종류</td><td>5속성: Fire(F), Water(W), Grass(N), Light(L), Dark(D)</td></tr>
-  <tr><td>특수 아이템</td><td>폭탄(B) 4%, 라인클리어(R) 3%</td></tr>
-  <tr><td>장애물</td><td>적 공격 시 생성, 상호작용 불가</td></tr>
+  <thead>
+    <tr><th>#</th><th>핵심 기능</th><th>검증할 가설</th><th>검증 방법</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>젬 드래그 퍼즐 + 실시간 적 공격</td>
+      <td>젬 드래그로 스킬을 발동하고 적 게이지를 보는 긴장감이 있으면 플레이어는 한 판 후 자발적으로 재시작한다</td>
+      <td>1회 플레이 후 재시작률 60% 이상</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>적 공격 게이지 실시간 표시</td>
+      <td>위험(게이지)과 보상(스킬 발동)이 동시에 보이면 선택 시간이 줄고 결과 납득도가 오른다</td>
+      <td>주요 드래그 시작까지 평균 8초 이내, 결과 불만 피드백 20% 이하</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>파티 편성 선택 (4인)</td>
+      <td>파티 편성이 젬 스폰 확률에 영향을 미친다는 것을 체감하면 3판 내 서로 다른 구성을 시도하게 된다</td>
+      <td>3판 내 서로 다른 파티 구성 시도율 50% 이상</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>속성 상성 피해 배율</td>
+      <td>속성 상성이 전투 결과에 즉각 반영되면 플레이어가 상성 학습을 자발적으로 진행한다</td>
+      <td>3스테이지 이후 상성 우위 젬 우선 드래그 비율 70% 이상</td>
+    </tr>
+  </tbody>
 </table>
 
-<h3>3.1 젬 스폰 (파티 가중치)</h3>
-<div class="section-card">
-  <p>기본 각 속성 20% / 파티 캐릭터 속성 보너스: <strong>+8%/캐릭터</strong></p>
-  <p>부족분은 나머지 속성에 균등 분배</p>
-  <p><strong>예시:</strong> 파티(Fire, Fire, Water, Grass) &rarr; Fire 36%, Water 28%, Grass 28%, Light 14%, Dark 14%</p>
-</div>
-
-<h3>3.2 젬 소모 및 리필</h3>
+<h2>레퍼런스 분석</h2>
+<h3>1. 퍼즐&amp;드래곤즈 (GungHo, 2012)</h3>
 <ul>
-  <li>드래그 완료 시 경로상의 젬이 소모됨</li>
-  <li>소모된 셀은 즉시 리필 (파티 가중치 기반 확률)</li>
-  <li>리필 확률: 폭탄 4% / 라인클리어 3% / 일반 젬 93%</li>
-  <li>리필 애니메이션: 기존 젬 페이드+확대 &rarr; 컬러 버스트 &rarr; 새 젬 팝인</li>
+  <li><strong>핵심 행동까지 UX 단계:</strong> 설치→튜토리얼→첫 던전 입장→드래그 조작 = <strong>4단계, 약 3분</strong></li>
+  <li><strong>특징:</strong> 드래그로 젬을 이동시켜 3매치를 만드는 심플한 입력, RPG 성장과 결합</li>
+  <li><strong>교훈:</strong> 드래그 조작은 직관적이지만 첫 화면에서 "무엇을 드래그해야 하는지" 시각적 힌트가 없으면 이탈률이 높다. → ElementalCommand는 첫 전투에서 드래그 가능 영역을 명확히 강조한다.</li>
 </ul>
-
-<h3>3.3 특수 아이템 효과</h3>
+<h3>2. Hearthstone (Blizzard, 2014)</h3>
 <ul>
-  <li><strong>폭탄(B):</strong> 드래그 경로에 포함 시 인접 비장애물 셀도 함께 소모</li>
-  <li><strong>라인클리어(R):</strong> 드래그 경로에 포함 시 해당 행 전체 비장애물 셀 소모</li>
-  <li>특수 아이템은 스킬/약점 매칭에 포함되지 않음</li>
-  <li>특수 아이템으로 소모된 속성 젬도 약점 진행에 기여</li>
+  <li><strong>핵심 행동까지 UX 단계:</strong> 로그인→덱 선택→첫 턴 카드 플레이 = <strong>3단계, 약 2분</strong></li>
+  <li><strong>특징:</strong> 카드 드래그 하나로 즉각적인 전투 결과 확인, 명확한 승패 조건</li>
+  <li><strong>교훈:</strong> 첫 의미 있는 선택 후 결과가 즉시 시각화되면 플레이어가 인과관계를 빠르게 학습한다. → ElementalCommand는 스킬 발동 시 속성 효과 이펙트와 피해 숫자를 즉시 표시한다.</li>
 </ul>
-
-<h3>3.4 장애물</h3>
+<h3>3. Into the Breach (Subset Games, 2018)</h3>
 <ul>
-  <li>적 공격 성공 시 보드의 일반 젬 1개가 파괴 불가 장애물로 변환</li>
-  <li>장애물 수 제한 없음</li>
-  <li>선택/소모/리필 효과 대상 불가</li>
+  <li><strong>핵심 행동까지 UX 단계:</strong> 게임 시작→그리드 확인→첫 유닛 이동 = <strong>2단계, 약 1분</strong></li>
+  <li><strong>특징:</strong> 적의 다음 행동이 미리 보여 계획을 세울 수 있는 투명한 정보 설계</li>
+  <li><strong>교훈:</strong> 적의 공격 타이밍을 명확히 보여주면 플레이어가 위기감과 전략적 판단을 동시에 느낀다. → ElementalCommand의 적 공격 게이지 실시간 표시는 이 원칙을 직접 적용한 것이다.</li>
 </ul>
+<blockquote><strong>공통 적용 교훈:</strong> 규칙 설명보다 먼저 선택 가능한 상황을 보여주고, 결과 화면에서 다음 판의 개선 포인트를 바로 제안한다.</blockquote>
 
-<h3>3.5 보드 비주얼</h3>
-<ul>
-  <li>보드 프레임: 반투명 어두운 배경 + 미세한 발광 테두리</li>
-  <li>드래그 경로: 이중 라인 (넓은 글로우 + 좁은 선명 선)</li>
-  <li>젬: 판타지 보석 스타일 텍스처 + 선택 시 하이라이트 링 + 스케일업</li>
-</ul>
-
-<!-- 4. 캐릭터 -->
-<h2>4. 캐릭터 시스템</h2>
-
-<h3>4.1 파티 구성</h3>
-<ul>
-  <li>전체 로스터: 5명 중 1~4명 선택</li>
-  <li>전투 중 드래그 완료마다 자동 순환</li>
-  <li>사망한 캐릭터는 순환에서 제외</li>
-</ul>
-
-<h3>4.2 캐릭터 목록</h3>
+<h2>성공 KPI</h2>
 <table>
-  <tr><th>캐릭터</th><th>속성</th><th>HP</th><th>공격력</th><th>역할</th></tr>
-  <tr><td>Ember Guard</td><td><span class="tag tag-fire">Fire</span></td><td>1200</td><td>180</td><td>DPS</td></tr>
-  <tr><td>Tide Arcanist</td><td><span class="tag tag-water">Water</span></td><td>800</td><td>250</td><td>마법사</td></tr>
-  <tr><td>Wildwood Ranger</td><td><span class="tag tag-grass">Grass</span></td><td>1000</td><td>200</td><td>레인저</td></tr>
-  <tr><td>Dawn Paladin</td><td><span class="tag tag-light">Light</span></td><td>1500</td><td>150</td><td>탱커</td></tr>
-  <tr><td>Umbral Blade</td><td><span class="tag tag-dark">Dark</span></td><td>900</td><td>300</td><td>암살자</td></tr>
+  <thead>
+    <tr><th>지표</th><th>목표 수치</th><th>측정 방법</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>세션당 평균 플레이 시간</td><td><strong>8분 이상</strong></td><td>세션 시작~종료 타임스탬프</td></tr>
+    <tr><td>첫 세션 내 2회차 진입률</td><td><strong>55% 이상</strong></td><td>1회차 종료 후 재시작 이벤트 수 / 전체 1회차 완료 수</td></tr>
+    <tr><td>D1 리텐션 (익일 재방문율)</td><td><strong>30% 이상</strong></td><td>첫 플레이 후 24시간 내 재접속 유저 비율</td></tr>
+    <tr><td>레벨 3 스테이지 도달률</td><td><strong>40% 이상</strong></td><td>스테이지 3 입장 이벤트 수 / 전체 신규 유저 수</td></tr>
+    <tr><td>핵심 선택 화면 이탈률</td><td><strong>15% 이하</strong></td><td>파티 편성 화면 진입 후 전투 미시작 비율</td></tr>
+    <tr><td>속성 상성 인지율</td><td><strong>70% 이상</strong></td><td>3스테이지 이후 상성 우위 젬 드래그 비율</td></tr>
+  </tbody>
 </table>
 
-<h3>4.3 스킬 시스템</h3>
+<h2>조작과 UX 원칙</h2>
 <ul>
-  <li>캐릭터당 <strong>3개 스킬</strong> 보유</li>
-  <li>전투 중 활성 캐릭터의 스킬 패널에서 스킬 선택 가능</li>
-  <li>각 스킬: 고유 이름 + 요구 젬 시퀀스(3개) + 데미지 배율</li>
-  <li>선택된 스킬이 시퀀스 매칭, 컷인 텍스트, 데미지 배율 결정</li>
+  <li>주요 버튼은 44px 이상으로 유지하고, 화면당 CTA 강조색은 하나만 사용한다.</li>
+  <li>버튼/선택지는 한 번에 5개 이하로 노출해 판단 부담을 줄인다.</li>
+  <li>400ms 이내 조작 피드백 (젬 드래그 반응, 스킬 발동 이펙트)</li>
+  <li>로딩, 빈 상태, 에러, 많은 데이터, 긴 텍스트 상태를 각각 별도 처리</li>
+  <li>HUD 동일 레이어 요소는 겹치지 않게 배치하고, 겹침이 필요한 효과는 별도 depth/z-order를 사용한다.</li>
 </ul>
 
-<h3>4.4 스킬 상세</h3>
-<div class="char-grid">
-  <div class="char-card" style="border-color: #ff444444;">
-    <h4 style="color: #ff6b6b;">Ember Guard <span class="tag tag-fire">Fire</span></h4>
-    <div class="char-stats">HP 1200 / ATK 180</div>
-    <div class="skill-row"><strong>Blazing Cleave</strong> F-F-W &middot; 3.0x</div>
-    <div class="skill-row"><strong>Ember Rush</strong> F-W-F &middot; 2.4x</div>
-    <div class="skill-row"><strong>Guard Break</strong> F-F-F &middot; 3.8x</div>
-  </div>
-  <div class="char-card" style="border-color: #4488ff44;">
-    <h4 style="color: #6baaff;">Tide Arcanist <span class="tag tag-water">Water</span></h4>
-    <div class="char-stats">HP 800 / ATK 250</div>
-    <div class="skill-row"><strong>Glacial Bloom</strong> W-W-L &middot; 3.5x</div>
-    <div class="skill-row"><strong>Tidal Lance</strong> W-L-W &middot; 2.7x</div>
-    <div class="skill-row"><strong>Arcane Tide</strong> W-W-W &middot; 4.0x</div>
-  </div>
-  <div class="char-card" style="border-color: #44cc4444;">
-    <h4 style="color: #6bdd6b;">Wildwood Ranger <span class="tag tag-grass">Grass</span></h4>
-    <div class="char-stats">HP 1000 / ATK 200</div>
-    <div class="skill-row"><strong>Thorn Volley</strong> N-D-N &middot; 2.5x</div>
-    <div class="skill-row"><strong>Snare Shot</strong> N-N-D &middot; 3.1x</div>
-    <div class="skill-row"><strong>Wild Barrage</strong> N-N-N &middot; 3.6x</div>
-  </div>
-  <div class="char-card" style="border-color: #ffee4444;">
-    <h4 style="color: #ffe066;">Dawn Paladin <span class="tag tag-light">Light</span></h4>
-    <div class="char-stats">HP 1500 / ATK 150</div>
-    <div class="skill-row"><strong>Radiant Oath</strong> L-L-F &middot; 2.8x</div>
-    <div class="skill-row"><strong>Sunward Smite</strong> L-F-L &middot; 3.2x</div>
-    <div class="skill-row"><strong>Dawn Shelter</strong> L-L-L &middot; 3.7x</div>
-  </div>
-  <div class="char-card" style="border-color: #aa44cc44;">
-    <h4 style="color: #cc88ee;">Umbral Blade <span class="tag tag-dark">Dark</span></h4>
-    <div class="char-stats">HP 900 / ATK 300</div>
-    <div class="skill-row"><strong>Midnight Cut</strong> D-D-D &middot; 4.0x</div>
-    <div class="skill-row"><strong>Shade Step</strong> D-F-D &middot; 3.2x</div>
-    <div class="skill-row"><strong>Eclipse Fang</strong> D-L-D &middot; 3.4x</div>
-  </div>
-</div>
-
-<h3>4.5 스킬 컷인 연출</h3>
-<ul>
-  <li>스킬 발동 시 활성 캐릭터의 대형 초상화가 화면에 페이드인/아웃</li>
-  <li>전투 흐름을 멈추지 않고 오버레이로 표시</li>
-  <li>카메라 플래시 + 미세 셰이크 효과 동반</li>
-</ul>
-
-<!-- 5. 적 시스템 -->
-<h2>5. 적 시스템</h2>
-
-<h3>5.1 적 종류</h3>
+<h2>기술 스택</h2>
 <table>
-  <tr><th>적</th><th>HP</th><th>공격력</th><th>간격</th><th>약점 요구</th></tr>
-  <tr>
-    <td>Moss Imp</td><td>500</td><td>60</td><td>4초</td>
-    <td><span class="tag tag-fire">F</span>x2 <span class="tag tag-grass">N</span>x1</td>
-  </tr>
-  <tr>
-    <td>Iron Brute</td><td>1200</td><td>120</td><td>5초</td>
-    <td><span class="tag tag-water">W</span>x2 <span class="tag tag-light">L</span>x3</td>
-  </tr>
-  <tr>
-    <td>Grave Warden</td><td>2000</td><td>180</td><td>6초</td>
-    <td><span class="tag tag-light">L</span>x2 <span class="tag tag-fire">F</span>x2 <span class="tag tag-water">W</span>x2</td>
-  </tr>
-  <tr>
-    <td>Cinder Wisp</td><td>800</td><td>200</td><td>3초</td>
-    <td><span class="tag tag-water">W</span>x3 <span class="tag tag-dark">D</span>x2</td>
-  </tr>
-  <tr>
-    <td>Night Maw</td><td>3000</td><td>250</td><td>7초</td>
-    <td><span class="tag tag-light">L</span>x3 <span class="tag tag-grass">N</span>x2 <span class="tag tag-fire">F</span>x3</td>
-  </tr>
+  <thead>
+    <tr><th>항목</th><th>선택</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>게임 엔진</td><td>Phaser.js 3</td></tr>
+    <tr><td>언어</td><td>JavaScript (ES Modules)</td></tr>
+    <tr><td>빌드</td><td>Vite</td></tr>
+    <tr><td>모바일 확장</td><td>Capacitor (예정)</td></tr>
+    <tr><td>데스크톱 확장</td><td>Electron (예정)</td></tr>
+  </tbody>
 </table>
 
-<h3>5.2 적 공격 메커니즘</h3>
+<h2>비주얼 방향</h2>
 <ul>
-  <li>각 적은 독립적인 공격 타이머 보유</li>
-  <li>공격 게이지가 <strong>1/3 속도</strong>로 충전 (느리지만 강력)</li>
-  <li>공격 성공 시 <strong>3배 데미지</strong> + 보드에 장애물 1개 생성</li>
-  <li>공격 대상: 랜덤 생존 캐릭터</li>
+  <li>다크 마법 전장 배경 + 판독성 높은 대비</li>
+  <li>원소 젬: 폴리싱된 판타지 스톤 느낌 (단순 색상 헥스가 아닌)</li>
+  <li>캐릭터 카드: 포트레이트 아트, 원소 프레임, 스킬 아이덴티티 명확화</li>
+  <li>적 슬롯: 몬스터 포트레이트, 강화된 HP 바, 공격 게이지 명확 표시</li>
+  <li>스킬 발동 시 속성별 임팩트 이펙트</li>
 </ul>
 
-<h3>5.3 약점(Weakness) 시스템</h3>
-<div class="section-card">
+<h2>현재 개발 상태 (2026-06-24 기준)</h2>
+<table>
+  <thead>
+    <tr><th>항목</th><th>체감 진행률</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>핵심 루프 구현</td><td>~50%</td></tr>
+    <tr><td>첫 세션 루프 전달 가능성</td><td>~56%</td></tr>
+    <tr><td>UI/리소스 일관성</td><td>~46%</td></tr>
+    <tr><td>콘텐츠·반복 플레이 분량</td><td>~46%</td></tr>
+    <tr><td>빌드/실행 안정성</td><td>~40%</td></tr>
+  </tbody>
+</table>
+<blockquote>실제 플레이 테스트 후 ±15%p 보정 필요</blockquote>
+
+<h2>남은 리스크와 다음 우선순위</h2>
+<ol>
+  <li>첫 화면에서 게임의 목표와 다음 행동이 5초 안에 보이는지 확인</li>
+  <li>주요 선택의 결과 예측과 실제 결과가 어긋나는 지점을 플레이 테스트로 수집</li>
+  <li>적 공격 게이지 표시가 실시간 긴장감을 충분히 전달하는지 검증</li>
+  <li>파티 편성이 젬 스폰 확률에 영향을 준다는 것을 플레이어가 체감하는지 확인</li>
+</ol>
+
+<h2>빌드 및 테스트</h2>
+<pre>npm test         # npx vitest run
+npm run build    # npx vite build</pre>
+<p>현재 버전: <strong>0.2.0</strong></p>
+
+
+<section class="section">
+  <h2>개선 제안</h2>
+  <p style="color:#888;margin-top:-8px;margin-bottom:24px;">아래 제안은 현재 기획을 바탕으로 도출한 우선순위별 개선 방향입니다.</p>
+
+  <h3>🎮 게임플레이 / 핵심 기능</h3>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+    <thead><tr style="background:#1e293b;">
+      <th style="padding:10px;text-align:left;color:#94a3b8;width:80px;">우선순위</th>
+      <th style="padding:10px;text-align:left;color:#94a3b8;">제안</th>
+      <th style="padding:10px;text-align:left;color:#94a3b8;">기대 효과</th>
+    </tr></thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #e2e8f0;">
+        <td style="padding:10px;"><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">높음</span></td>
+        <td style="padding:10px;">전투 결과 화면에서 "이번 판 최고 시퀀스"와 "놓친 상성 조합"을 자동으로 하이라이트 표시</td>
+        <td style="padding:10px;color:#666;">결과 납득도 상승 + 다음 판 전략 힌트 제공으로 재시작률 60% 목표 달성 가속</td>
+      </tr>
+      <tr style="border-bottom:1px solid #e2e8f0;">
+        <td style="padding:10px;"><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">높음</span></td>
+        <td style="padding:10px;">드래그 중 현재 선택된 젬 시퀀스가 발동할 스킬 데미지 예상치를 실시간 오버레이로 표시</td>
+        <td style="padding:10px;color:#666;">선택-결과 인과관계 즉시 체감 → 첫 드래그 시작까지 평균 8초 이내 KPI 달성</td>
+      </tr>
+      <tr style="border-bottom:1px solid #e2e8f0;">
+        <td style="padding:10px;"><span style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">중간</span></td>
+        <td style="padding:10px;">3판 연속 패배 시 "이 스테이지 추천 파티 힌트" 팝업 노출 (속성 조합 1가지만 제시)</td>
+        <td style="padding:10px;color:#666;">무한 이탈 방지 + 파티 편성 다양성 시도율 50% KPI 달성 보조</td>
+      </tr>
+      <tr style="border-bottom:1px solid #e2e8f0;">
+        <td style="padding:10px;"><span style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">중간</span></td>
+        <td style="padding:10px;">캐릭터 순환 순서를 전투 전 드래그로 변경 가능한 "순서 편집" 기능 추가</td>
+        <td style="padding:10px;color:#666;">파티 편성의 전술 깊이 증가, 3회차 이후 재편성 동기 부여</td>
+      </tr>
+      <tr>
+        <td style="padding:10px;"><span style="background:#6b7280;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">낮음</span></td>
+        <td style="padding:10px;">일일 도전 스테이지(제한 파티 구성 조건) 추가 — 예: "불 속성 캐릭터 2인 이상 필수"</td>
+        <td style="padding:10px;color:#666;">매일 새로운 제약 조건으로 "오늘만의 퍼즐" 제공, D1 리텐션 30% 목표 지원</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>🖥️ UX / UI</h3>
   <ul>
-    <li>각 적은 특정 속성 젬의 <strong>색상-수량</strong> 조합 요구</li>
-    <li><strong>순서 무관</strong>, 파괴된 속성 젬이 생존한 모든 적의 약점에 누적</li>
-    <li>약점 UI: 색상별 그룹화 + 진행 카운트 (예: <code>1/3</code>)</li>
-    <li>약점 완료 시: 대량 데미지 + 타이머 리셋 + 진행도 초기화</li>
+    <li><strong>첫 전투 진입 시 조작 불명확:</strong> 헥사 보드 위 첫 유효 젬 위치에 박동 애니메이션과 "여기서 드래그 시작" 화살표 오버레이를 3초간 표시한 뒤 자동 사라지게 처리 — 퍼즐&드래곤즈 레퍼런스에서 도출한 이탈 방지책</li>
+    <li><strong>캐릭터 순환 직관성 부족:</strong> 현재 활성 캐릭터 강조 외에, 다음 순서 캐릭터 슬롯에 "NEXT" 뱃지와 낮은 투명도를 적용해 순환 구조를 한눈에 인지하도록 개선</li>
+    <li><strong>적 공격 게이지 긴박감 부족:</strong> 게이지 70% 이상 시 게이지 바 색상을 주황→빨강으로 변경하고 화면 가장자리에 얕은 붉은 빛을 추가 — 시각적 경보로 판단 가속 유도</li>
+    <li><strong>파티 편성 화면 이탈률 15% 문제:</strong> 캐릭터 선택 시 해당 속성의 젬 스폰 확률 변화를 즉시 미리보기로 보드 상단에 표시 — "고르면 이렇게 바뀐다"는 즉각 피드백 제공</li>
   </ul>
-</div>
 
-<h3>5.4 스테이지 HP 스케일링</h3>
-<ul>
-  <li>적 기본 HP는 데이터상 고정</li>
-  <li>전투 시 스테이지별 <strong>1.75배 지수 성장</strong> 적용</li>
-  <li>공식: <code>실제HP = 기본HP x 1.75^(stageIndex)</code></li>
-</ul>
-
-<!-- 6. 스테이지 -->
-<h2>6. 스테이지</h2>
-<table>
-  <tr><th>ID</th><th>이름</th><th>적 구성</th></tr>
-  <tr><td>1</td><td>First Trial</td><td>Moss Imp x3</td></tr>
-  <tr><td>2</td><td>Brute Ambush</td><td>Moss Imp + Iron Brute + Moss Imp</td></tr>
-  <tr><td>3</td><td>Cinder Crossing</td><td>Cinder Wisp + Iron Brute</td></tr>
-  <tr><td>4</td><td>Warden Gate</td><td>Grave Warden</td></tr>
-  <tr><td>5</td><td>Abyssal Stand</td><td>Night Maw + Grave Warden</td></tr>
-</table>
-
-<!-- 7. 데미지 계산 -->
-<h2>7. 데미지 계산</h2>
-<div class="section-card">
-  <pre>스킬 데미지 = 캐릭터.공격력 x 스킬.배율
-기본 공격 데미지 = 캐릭터.공격력
-적당 데미지 = 총 데미지 / 생존 적 수</pre>
-  <p>적 공격: 랜덤 생존 캐릭터 대상 (3배 데미지) + 보드에 장애물 생성</p>
-</div>
-
-<!-- 8. 비주얼 시스템 -->
-<h2>8. 비주얼 시스템</h2>
-
-<h3>8.1 아트 방향</h3>
-<p>모바일 판타지 RPG 스타일. 어두운 마법 전장 배경 위에 화려한 보석 젬과 캐릭터 초상화.</p>
-
-<h3>8.2 에셋 전략 (프로시저럴 생성)</h3>
-<ul>
-  <li><strong>배경:</strong> 그라데이션 + 악센트 컬러 (메뉴/전투 2종)</li>
-  <li><strong>젬:</strong> 속성별 컬러 보석 텍스처 (Phaser Graphics)</li>
-  <li><strong>캐릭터 초상화:</strong> 속성 컬러 기반 프로시저럴 포트레이트</li>
-  <li><strong>적 초상화:</strong> 적 컬러 기반 프로시저럴 몬스터 아트</li>
-  <li><strong>UI 패널:</strong> 카드/슬롯 프레임 텍스처</li>
-</ul>
-
-<h3>8.3 에셋 매니페스트</h3>
-<table>
-  <tr><th>카테고리</th><th>텍스처 키 패턴</th><th>예시</th></tr>
-  <tr><td>젬</td><td><code>gem-{type}</code></td><td>gem-fire, gem-water</td></tr>
-  <tr><td>캐릭터</td><td><code>portrait-{id}</code></td><td>portrait-warrior, portrait-mage</td></tr>
-  <tr><td>적</td><td><code>enemy-{id}</code></td><td>enemy-goblin, enemy-orc</td></tr>
-  <tr><td>배경</td><td>고정 키</td><td>bg-menu, bg-battle</td></tr>
-  <tr><td>UI</td><td>고정 키</td><td>ui-stage-card, ui-party-card</td></tr>
-</table>
-
-<h3>8.4 화면별 비주얼</h3>
-<ul>
-  <li><strong>스테이지 선택:</strong> 판타지 메뉴 배경 + 스테이지 카드 + 호버 틴트</li>
-  <li><strong>파티 선택:</strong> 캐릭터 카드 + 초상화 + 속성 프레임 + 선택 틴트 + 스탯</li>
-  <li><strong>전투:</strong> 전투 배경 + 적 초상화/HP/게이지/약점 + 캐릭터 초상화/HP/스킬패널 + 보석 젬 보드</li>
-</ul>
-
-<!-- 9. 화면 레이아웃 -->
-<h2>9. 화면 레이아웃</h2>
-<div class="layout-box">
-+-----------------------------+<br>
-|&nbsp; [적 영역]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
-|&nbsp; 초상화&nbsp; HP바&nbsp; 공격게이지&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
-|&nbsp; 약점 진행: Fire 1/2, ...&nbsp;&nbsp;&nbsp;&nbsp;|<br>
-+-----------------------------+<br>
-|&nbsp; [캐릭터 영역]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
-|&nbsp; 초상화 x4 (활성 강조)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
-|&nbsp; 스킬 선택 패널&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
-|&nbsp; [스킬1] [스킬2] [스킬3]&nbsp;&nbsp;&nbsp;&nbsp;|<br>
-+-----------------------------+<br>
-|&nbsp; [헥사 퍼즐 보드 5x6]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
-|&nbsp; 보드 프레임 + 드래그 글로우&nbsp;&nbsp;|<br>
-+-----------------------------+
-</div>
-
-<!-- 10. 배치 시스템 -->
-<h2>10. 배치 시스템 (개발 예정)</h2>
-<table>
-  <tr><th>종류</th><th>이름</th></tr>
-  <tr><td>건물</td><td>Barracks, Arrow Tower, Mana Well</td></tr>
-  <tr><td>영웅</td><td>Field Captain, Crystal Seer, Stone Sentinel</td></tr>
-</table>
-<p>현재 UI 스캐폴딩 완료, 상세 메커닉 구현 예정.</p>
-
-<!-- 11. 기술 스택 -->
-<h2>11. 기술 스택</h2>
-<table>
-  <tr><th>레이어</th><th>기술</th></tr>
-  <tr><td>게임 엔진</td><td>Phaser.js 3.80.1</td></tr>
-  <tr><td>언어</td><td>JavaScript (ES Modules)</td></tr>
-  <tr><td>빌드</td><td>Vite 5.2.0</td></tr>
-  <tr><td>테스트</td><td>Vitest 1.6.0</td></tr>
-  <tr><td>데스크톱</td><td>Electron (portable exe)</td></tr>
-  <tr><td>모바일</td><td>Capacitor (예정)</td></tr>
-</table>
-
-<h3>11.1 프로젝트 구조</h3>
-<pre>src/
-├── main.js
-├── constants.js              # 젬 타입, 보드 설정, UI 폰트
-├── scenes/
-│   ├── BootScene.js          # 프로시저럴 에셋 생성 + 씬 전환
-│   ├── StageSelectScene.js   # 스테이지 선택
-│   ├── PartySelectScene.js   # 파티 편성 (1~4인)
-│   └── BattleScene.js        # 핵심 전투 씬
-├── objects/
-│   ├── HexBoard.js           # 헥사 퍼즐 보드
-│   ├── Gem.js                # 젬 오브젝트
-│   ├── CharacterSlot.js      # 캐릭터 슬롯 (초상화 + HP)
-│   └── EnemySlot.js          # 적 슬롯 (초상화 + HP + 타이머 + 약점)
-├── data/
-│   ├── characters.js         # 캐릭터 정의 + 스킬 배열
-│   ├── enemies.js            # 적 데이터 + 약점
-│   └── stages.js             # 스테이지 데이터
-└── systems/
-    ├── AssetManifest.js      # 에셋 키/ID 관리
-    ├── ArtFactory.js         # 프로시저럴 텍스처 생성
-    ├── CombatBoard.js        # 전투 수학 (스케일링, 약점, 리필)
-    ├── SequenceChecker.js    # 드래그 시퀀스 검증
-    └── GemSpawner.js         # 파티 기반 젬 확률 관리</pre>
-
-<!-- 12. 로드맵 -->
-<h2>12. 로드맵</h2>
-
-<h3>v0.1.0 (현재) - MVP + 아트 업그레이드</h3>
-<div class="roadmap-item done">헥사곤 퍼즐 보드 (5x6)</div>
-<div class="roadmap-item done">5캐릭터 / 5적 / 5스테이지</div>
-<div class="roadmap-item done">실시간 전투 시스템</div>
-<div class="roadmap-item done">젬 소모 + 즉시 리필 시스템</div>
-<div class="roadmap-item done">특수 아이템 (폭탄, 라인클리어)</div>
-<div class="roadmap-item done">장애물 시스템 (적 공격 시 생성)</div>
-<div class="roadmap-item done">약점 누적 시스템 (색상-수량 기반)</div>
-<div class="roadmap-item done">캐릭터당 3스킬 선택 시스템</div>
-<div class="roadmap-item done">스킬 컷인 애니메이션</div>
-<div class="roadmap-item done">스테이지 HP 스케일링 (1.75x 지수)</div>
-<div class="roadmap-item done">프로시저럴 아트 에셋 (배경, 젬, 초상화)</div>
-<div class="roadmap-item done">판타지 RPG 스타일 UI (카드, 프레임, 글로우)</div>
-<div class="roadmap-item done">블록 교체 애니메이션</div>
-<div class="roadmap-item done">Electron 패키징</div>
-
-<h3>v0.2.0 - 콘텐츠 확장</h3>
-<div class="roadmap-item">배치 시스템 구현</div>
-<div class="roadmap-item">추가 캐릭터/적/스테이지</div>
-<div class="roadmap-item">장비/강화 시스템</div>
-<div class="roadmap-item">업적/보상</div>
-
-<h3>v0.3.0 - 폴리시</h3>
-<div class="roadmap-item">외부 아트 에셋 교체</div>
-<div class="roadmap-item">사운드/BGM</div>
-<div class="roadmap-item">모바일 빌드 (Capacitor)</div>
-<div class="roadmap-item">밸런스 조정</div>
-
-<!-- 13. UX 온보딩 -->
-<h2>13. UX 온보딩 시스템 (v0.1.0 추가)</h2>
-
-<h3>속성 상성표 HUD 추가</h3>
-<p>전투 화면 우측 상단에 항상 표시되는 미니 속성 상성 참조 패널. 축약 형태(<strong>F&gt;N&gt;W&gt;F, L&harr;D</strong>)로 상시 노출하여 전략적 판단 보조.</p>
-
-<h3>파티 선택 화면 속성 뱃지 표시</h3>
-<p>파티 선택 화면의 각 캐릭터 카드에 속성 색상 뱃지를 추가 표시. 캐릭터 카드 하단에 현재 파티 편성 기준 예상 젬 가중치 미리보기 표시.</p>
-
-<h3>전투 중 키 힌트 오버레이</h3>
-<p>첫 번째 전투 진입 시 자동 노출되는 조작 힌트 오버레이. <code>battleHintSeen = true</code> 저장 후 재노출 없음.</p>
-<table>
-  <tr><th>항목</th><th>안내 내용</th></tr>
-  <tr><td>드래그</td><td>인접 젬을 드래그하여 시퀀스 생성</td></tr>
-  <tr><td>스킬</td><td>하단 스킬 패널에서 스킬 선택 후 매칭</td></tr>
-  <tr><td>속성</td><td>상단 상성표 참고, 약점 젬 우선 소모</td></tr>
-</table>
-
-<!-- 변경 이력 -->
-<h2>변경 이력</h2>
-<table>
-  <tr><th>버전</th><th>날짜</th><th>내용</th></tr>
-  <tr><td>v0.2.0</td><td>2026-06-08</td><td>Monster portrait sheet background removed with transparent edge mask; executable bundle refreshed without launching it.</td></tr>
-  <tr><td>v0.1.0</td><td>2026-05-29</td><td>UX 온보딩 추가 — 속성 상성표 HUD 추가, 파티 선택 화면 속성 뱃지 표시, 전투 중 키 힌트 오버레이</td></tr>
-</table>
-
-</div>
-<!-- APPLIED_RESOURCES_START -->
-<section class="applied-resources">
-  <h2>적용 리소스</h2>
-  <p>자동 갱신: 2026-06-04. 코드, 씬, 프리팹, 설정 파일에서 참조가 확인된 리소스 기준입니다.</p>
+  <h3>💰 수익화 전략</h3>
   <ul>
-    <li><strong>이미지/스프라이트</strong>: <code>public/assets/bg-battle.png</code>, <code>public/assets/bg-menu.png</code>, <code>public/assets/character-portraits-sheet.png</code>, <code>public/assets/deployables-sheet.png</code>, <code>public/assets/enemy-portraits-sheet.png</code>, <code>public/assets/gem-items-sheet.png</code></li>
+    <li><strong>코스메틱 젬 스킨:</strong> 원소별 젬 비주얼(파이어 → 용암석, 워터 → 수정구 등) 스킨 팩 판매. 젬은 화면 내 가장 많이 보이는 오브젝트이므로 구매 동기가 높고, 밸런스에 영향을 주지 않아 코어 유저 반발이 없음</li>
+    <li><strong>스테이지 팩 DLC:</strong> 스토리 챕터 1~3은 무료, 4챕터 이후는 일회성 결제로 해금. 코어 캐주얼 타겟의 "가벼운 소비" 패턴에 적합하며 광고 모델보다 플레이 흐름을 깨지 않음</li>
+    <li><strong>시즌 패스(배틀패스):</strong> 월 단위 미션(예: "불 속성 시퀀스 50회 완성")을 통해 전용 캐릭터 포트레이트 프레임 및 스테이지 테마 해금. 재방문율 지표(D1 리텐션 30%)에 직결되는 장기 참여 유도 구조</li>
   </ul>
-  <p><strong>메모:</strong></p><ul><li>리소스 후보 10개 중 자동 참조 확인 6개.</li></ul>
-  <p><strong>2026-06-08:</strong> <code>public/assets/enemy-portraits-sheet.png</code> updated with alpha-channel portrait-edge masking. Monster portraits now drop the square sheet background when cropped into <code>enemy-{id}</code> textures.</p>
-</section>
-<!-- APPLIED_RESOURCES_END -->
 
-<!-- RESOURCE_PREVIEWS_START -->
-<section class="resource-previews">
-  <h2>공유용 이미지 미리보기</h2>
-  <p>자동 갱신: 2026-06-04. 공유 시 문서와 함께 아래 이미지 경로가 포함되어야 합니다.</p>
-  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;">
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/character-portraits-sheet.png" alt="27_EC character-portraits-sheet" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/character-portraits-sheet.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/enemy-portraits-sheet.png" alt="27_EC enemy-portraits-sheet" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/enemy-portraits-sheet.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/bg-battle.png" alt="27_EC bg-battle" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/bg-battle.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/bg-menu.png" alt="27_EC bg-menu" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/bg-menu.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/deployables-sheet.png" alt="27_EC deployables-sheet" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/deployables-sheet.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../public/assets/gem-items-sheet.png" alt="27_EC gem-items-sheet" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>public/assets/gem-items-sheet.png</code></figcaption>
-</figure>
-  </div>
+  <h3>📦 콘텐츠 확장</h3>
+  <ul>
+    <li><strong>단기(1~2개월):</strong> 보스 스테이지 추가 — 전투 중 보스가 게이지 만충 시 전체 공격 대신 특정 속성 젬을 잠금(Locked Gem) 상태로 만드는 특수 패턴 도입. 현재 헥사 보드 시스템 위에 젬 상태 플래그만 추가하면 구현 가능</li>
+    <li><strong>중기(3~6개월):</strong> 원소 융합 스킬 시스템 — 2가지 이상 속성 젬을 연속 드래그하면 "불+물=증기 폭발" 같은 복합 스킬이 발동하는 체인 메커니즘 추가. 기존 시퀀스 루프를 확장하는 형태라 코어루프를 깨지 않음</li>
+    <li><strong>장기(6개월+):</strong> 비동기 PvP — 상대 파티의 지난 전투 시퀀스 패턴을 AI로 재현해 방어 진형으로 배치, 내 젬 선택으로 그 패턴을 깨는 구조. 실시간 매칭 서버 없이 비동기 전투 데이터만 교환해 인프라 부담 최소화</li>
+  </ul>
+
+  <h3>⚙️ 기술적 개선</h3>
+  <ul>
+    <li><strong>젬 스폰 시드 재현:</strong> 전투 시작 시 랜덤 시드를 기록해 리플레이·버그 재현이 가능하도록 개선. 현재 개발 안정성 40% 수준에서 QA 효율을 크게 높이고 플레이 데이터 분석 기반 마련</li>
+    <li><strong>Phaser Scene 메모리 관리:</strong> BattleScene 전환 시 Gem/Character 객체를 scene.shutdown 이벤트에서 명시적으로 destroy() 호출하지 않으면 재시작 누적 시 메모리 누수가 발생함. 각 Scene에 shutdown 핸들러를 추가하고 Phaser DevTools로 오브젝트 카운트를 모니터링할 것</li>
+    <li><strong>Capacitor 모바일 전환 준비:</strong> 터치 이벤트와 마우스 이벤트를 공통 Pointer 추상 레이어로 통일해두면 Capacitor 빌드 전환 시 조작 코드 수정 없이 배포 가능. 헥사 드래그 입력부터 적용 시작 권장</li>
+    <li><strong>스테이지 데이터 JSON 외부화:</strong> 현재 하드코딩 추정되는 스테이지 구성(적 종류·타이머·배치)을 /src/data/stages.json으로 분리하면 기획자가 코드 변경 없이 밸런스 조정 가능하고 콘텐츠 확장 속도가 3배 이상 빨라짐</li>
+  </ul>
 </section>
-<!-- RESOURCE_PREVIEWS_END -->
+
+
+<section><h2>2026-06-28 v0.2.1 비주얼 리소스 갱신</h2><p>전투 씬 배경 `public/assets/bg-battle.png`를 동일 크기 941x1672 PNG로 교체했다. `AssetManifest`의 `asset-bg-battle` 경로와 `BattleScene`의 `bg-battle` 키를 그대로 유지하면서 원소 전투 화면의 수직 배경 밀도와 마법 전장 질감을 강화했다. 원본은 `_temp/bg-battle_backup_20260628.png`, 생성 후보는 `_temp/bg-battle_source_20260628.png`에 보관한다.</p></section>
 </body>
 </html>
