@@ -221,10 +221,15 @@ npm run build    # npx vite build
 
 ?꾪닾 ??諛곌꼍 `public/assets/bg-battle.png`瑜??숈씪 ?ш린 941x1672 PNG濡?援먯껜?덈떎. `AssetManifest`??`asset-bg-battle` 寃쎈줈? `BattleScene`??`bg-battle` ?ㅻ? 洹몃?濡??좎??섎㈃???먯냼 ?꾪닾 ?붾㈃???섏쭅 諛곌꼍 諛?꾩? 留덈쾿 ?꾩옣 吏덇컧??媛뺥솕?덈떎. ?먮낯? `_temp/bg-battle_backup_20260628.png`, ?앹꽦 ?꾨낫??`_temp/bg-battle_source_20260628.png`??蹂닿??쒕떎.
 
-## 2026-06-29 v0.3.0 Command Matchup Feedback
+## 2026-06-29 v0.3.1 Command Matchup Feedback
 
 - BattleScene now shows a command matchup preview under the skill tray before the player acts.
 - The preview names the best enemy counter target, shows weakness counters before and after the selected command, and states the next tactical implication.
 - After a drag resolves, the same panel reports the resolved skill/basic command result against the updated enemy weakness state.
 - Pure helper coverage was added in `CombatBoard.test.js` for advantage preview, weakness break preview, and neutral/no-counter feedback.
 - Runtime audit: this batch added functional text feedback only. Existing Phaser graphics/circle/rectangle usage remains UI state, bars, rings, and progress indicators; no new SVG or code-drawn elemental icon resource was introduced.
+
+
+## v0.3.1 UI/HUD 개선
+- 전투 HUD를 SKILL SELECTION과 COMMAND PREVIEW 두 그룹으로 분리해 스킬 선택 상태와 결과 예측이 한 문장에 섞이지 않도록 정리했다.
+- uildBattleHudGroups 테스트를 추가해 선택/미리보기 그룹의 역할과 문구를 검증한다.

@@ -5,6 +5,7 @@ import EnemySlot from '../objects/EnemySlot.js'
 import { buildWeights } from '../systems/GemSpawner.js'
 import { checkSequence } from '../systems/SequenceChecker.js'
 import { buildCommandMatchupPreview, getCharacterSkills, isElementGem, resolveBattleParty, scaleEnemyForStage } from '../systems/CombatBoard.js'
+import { buildBattleHudGroups } from '../systems/BattleHudLayout.js'
 import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT } from '../constants.js'
 import { ENEMIES } from '../data/enemies.js'
 import { STAGES } from '../data/stages.js'
@@ -14,6 +15,8 @@ const PARTY_Y = 268
 const SEQ_HINT_Y = 328
 const SKILL_PANEL_Y = 356
 const COMMAND_PREVIEW_Y = 404
+const HUD_GROUP_LEFT_X = 166
+const HUD_GROUP_RIGHT_X = 370
 const DEPLOYABLE_FRAME_KEYS = ['ui-deploy-card', 'ui-deploy-card-selected']
 
 export default class BattleScene extends Phaser.Scene {
@@ -97,15 +100,26 @@ export default class BattleScene extends Phaser.Scene {
     this.skillCards = []
     this.skillPanel = this.add.image(GAME_WIDTH / 2, SKILL_PANEL_Y, 'ui-skill-tray')
       .setDepth(8)
-    this.commandPreviewText = this.add.text(GAME_WIDTH / 2, COMMAND_PREVIEW_Y, '', {
-      fontSize: '10px',
-      fontFamily: UI_FONT,
-      color: '#d9f2ff',
-      align: 'center',
-      backgroundColor: '#101729cc',
-      padding: { x: 10, y: 6 },
-      wordWrap: { width: 420 }
-    }).setOrigin(0.5).setDepth(10)
+    this.hudGroupPanels = [
+      this.add.image(HUD_GROUP_LEFT_X, COMMAND_PREVIEW_Y, 'ui-deploy-card').setDisplaySize(188, 54).setAlpha(0.86).setDepth(8),
+      this.add.image(HUD_GROUP_RIGHT_X, COMMAND_PREVIEW_Y, 'ui-deploy-card-selected').setDisplaySize(268, 54).setAlpha(0.9).setDepth(8)
+    ]
+    this.hudGroupLabels = [
+      this.add.text(HUD_GROUP_LEFT_X - 82, COMMAND_PREVIEW_Y - 20, 'SKILL SELECTION', {
+        fontSize: '8px', fontFamily: UI_FONT, color: '#fff1a8', fontStyle: 'bold'
+      }).setDepth(10),
+      this.add.text(HUD_GROUP_RIGHT_X - 122, COMMAND_PREVIEW_Y - 20, 'COMMAND PREVIEW', {
+        fontSize: '8px', fontFamily: UI_FONT, color: '#d9f2ff', fontStyle: 'bold'
+      }).setDepth(10)
+    ]
+    this.hudGroupTexts = [
+      this.add.text(HUD_GROUP_LEFT_X - 82, COMMAND_PREVIEW_Y - 6, '', {
+        fontSize: '9px', fontFamily: UI_FONT, color: '#ffffff', lineSpacing: 2, wordWrap: { width: 158 }
+      }).setDepth(10),
+      this.add.text(HUD_GROUP_RIGHT_X - 122, COMMAND_PREVIEW_Y - 6, '', {
+        fontSize: '8px', fontFamily: UI_FONT, color: '#d9f2ff', lineSpacing: 1, wordWrap: { width: 236 }
+      }).setDepth(10)
+    ]
   }
 
   _updateSkillPanel() {
@@ -177,20 +191,25 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   _updateCommandPreview(prefix = 'Preview', skill = null) {
-    if (!this.commandPreviewText || !this.enemySlots?.length || !this.characterSlots?.length) return
+    if (!this.hudGroupTexts || !this.enemySlots?.length || !this.characterSlots?.length) return
     const activeSlot = this.characterSlots[this.activeIndex]
     const selectedSkill = skill || this._selectedSkillFor(activeSlot.characterData)
     const preview = buildCommandMatchupPreview(selectedSkill, this.enemySlots)
     const counterLine = formatCounterDelta(preview.countersBefore, preview.countersAfter)
-    this.commandPreviewText
-      .setColor(preview.willBreakWeakness ? '#fff1a8' : '#d9f2ff')
-      .setText([
-        `${prefix}: ${preview.enemyName}`,
-        preview.resolvedEffect,
-        counterLine,
-        preview.tacticalImplication
-      ].filter(Boolean).join('\n'))
+    const groups = buildBattleHudGroups({
+      characterName: activeSlot.characterData.name,
+      selectedSkillName: selectedSkill.name,
+      preview: { ...preview, counterLine }
+    })
+    groups.forEach((group, index) => {
+      if (!this.hudGroupLabels?.[index] || !this.hudGroupTexts?.[index]) return
+      this.hudGroupLabels[index].setText(group.label)
+      this.hudGroupTexts[index]
+        .setColor(group.emphasis === 'break' ? '#fff1a8' : (group.role === 'primary-action' ? '#ffffff' : '#d9f2ff'))
+        .setText(group.lines.join('\n'))
+    })
   }
+
   _selectedSkillFor(characterData) {
     const skills = getCharacterSkills(characterData)
     const index = this.selectedSkillByCharacter.get(characterData.id) || 0
