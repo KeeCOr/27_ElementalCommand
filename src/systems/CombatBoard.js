@@ -123,6 +123,88 @@ export function resolveBattleParty(party, roster, maxSize = 4) {
   return roster.slice(0, maxSize)
 }
 
+export function buildCommandMatchupPreview(skill, enemySlots = []) {
+  const commandGems = (skill?.requiredGems || []).filter(isElementGem)
+  const aliveSlots = enemySlots.filter(slot => slot?.alive !== false)
+  let best = null
+
+  for (const slot of aliveSlots) {
+    const enemyData = slot.enemyData || slot
+    const requirements = getWeaknessRequirements(enemyData.weaknessGems)
+    if (requirements.length === 0) continue
+
+    const progress = slot.weaknessProgress || {}
+    const counters = requirements.map(entry => {
+      const add = commandGems.filter(type => type === entry.type).length
+      const current = Math.min(progress[entry.type] || 0, entry.count)
+      return {
+        type: entry.type,
+        current,
+        required: entry.count,
+        add,
+        after: Math.min(current + add, entry.count)
+      }
+    })
+    const score = counters.reduce((sum, entry) => sum + Math.max(0, entry.after - entry.current), 0)
+    if (score === 0) continue
+
+    const willBreakWeakness = counters.every(entry => entry.after >= entry.required)
+    const rank = score + (willBreakWeakness ? 100 : 0)
+    if (!best || rank > best.rank) {
+      best = { enemyData, counters, score, rank, willBreakWeakness }
+    }
+  }
+
+  if (!best) {
+    return {
+      enemyName: 'No direct counter',
+      advantageGems: [],
+      countersBefore: [],
+      countersAfter: [],
+      willBreakWeakness: false,
+      resolvedEffect: `${skill?.name || 'Command'} has no visible weakness counter.`,
+      tacticalImplication: 'Next tactical implication: switch targets or save matching gems for a visible counter.'
+    }
+  }
+
+  const touched = best.counters.filter(entry => entry.add > 0)
+  const shownCounters = best.willBreakWeakness ? best.counters : touched
+  const missing = best.counters.filter(entry => entry.after < entry.required)
+  const advantageGems = []
+  for (const entry of touched) {
+    for (let i = 0; i < entry.add; i++) advantageGems.push(entry.type)
+  }
+
+  return {
+    enemyName: best.enemyData.name,
+    advantageGems,
+    countersBefore: shownCounters.map(entry => ({ type: entry.type, current: entry.current, required: entry.required })),
+    countersAfter: shownCounters.map(entry => ({ type: entry.type, current: entry.after, required: entry.required })),
+    willBreakWeakness: best.willBreakWeakness,
+    resolvedEffect: best.willBreakWeakness
+      ? `${skill?.name || 'Command'} breaks weakness on ${best.enemyData.name}.`
+      : `${skill?.name || 'Command'} adds ${formatGemCount(touched)} toward ${best.enemyData.name}.`,
+    tacticalImplication: best.willBreakWeakness
+      ? 'Next tactical implication: attack timer reset opens a damage window.'
+      : `Next tactical implication: still needs ${formatGemCount(missing, 'requiredAfter')} to break weakness.`
+  }
+}
+
+function formatGemCount(entries, mode = 'add') {
+  const parts = entries
+    .map(entry => {
+      const count = mode === 'requiredAfter' ? entry.required - entry.after : entry.add
+      if (count <= 0) return null
+      return `${count} ${capitalizeElement(entry.type)}`
+    })
+    .filter(Boolean)
+  return parts.length ? parts.join(' + ') : '0 gems'
+}
+
+function capitalizeElement(type) {
+  return `${type.charAt(0).toUpperCase()}${type.slice(1)}`
+}
+
 function countTypes(types) {
   const counts = {}
   for (const type of types || []) {
@@ -130,3 +212,4 @@ function countTypes(types) {
   }
   return counts
 }
+

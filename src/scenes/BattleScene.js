@@ -4,7 +4,7 @@ import CharacterSlot from '../objects/CharacterSlot.js'
 import EnemySlot from '../objects/EnemySlot.js'
 import { buildWeights } from '../systems/GemSpawner.js'
 import { checkSequence } from '../systems/SequenceChecker.js'
-import { getCharacterSkills, isElementGem, resolveBattleParty, scaleEnemyForStage } from '../systems/CombatBoard.js'
+import { buildCommandMatchupPreview, getCharacterSkills, isElementGem, resolveBattleParty, scaleEnemyForStage } from '../systems/CombatBoard.js'
 import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT } from '../constants.js'
 import { ENEMIES } from '../data/enemies.js'
 import { STAGES } from '../data/stages.js'
@@ -13,6 +13,7 @@ import { CHARACTERS } from '../data/characters.js'
 const PARTY_Y = 268
 const SEQ_HINT_Y = 328
 const SKILL_PANEL_Y = 356
+const COMMAND_PREVIEW_Y = 404
 const DEPLOYABLE_FRAME_KEYS = ['ui-deploy-card', 'ui-deploy-card-selected']
 
 export default class BattleScene extends Phaser.Scene {
@@ -96,6 +97,15 @@ export default class BattleScene extends Phaser.Scene {
     this.skillCards = []
     this.skillPanel = this.add.image(GAME_WIDTH / 2, SKILL_PANEL_Y, 'ui-skill-tray')
       .setDepth(8)
+    this.commandPreviewText = this.add.text(GAME_WIDTH / 2, COMMAND_PREVIEW_Y, '', {
+      fontSize: '10px',
+      fontFamily: UI_FONT,
+      color: '#d9f2ff',
+      align: 'center',
+      backgroundColor: '#101729cc',
+      padding: { x: 10, y: 6 },
+      wordWrap: { width: 420 }
+    }).setOrigin(0.5).setDepth(10)
   }
 
   _updateSkillPanel() {
@@ -141,6 +151,8 @@ export default class BattleScene extends Phaser.Scene {
       })
       this.skillCards.push({ card, hitZone, name, gems })
     })
+
+    this._updateCommandPreview('Preview')
   }
 
   _onDragComplete(path) {
@@ -161,8 +173,24 @@ export default class BattleScene extends Phaser.Scene {
     const consumed = this.board.consumePath(path)
     this._applyWeaknessProgress(consumed.map(cell => cell.gemType).filter(isElementGem))
     this._advanceCharacter()
+    this._updateCommandPreview(skillFired ? 'Resolved skill' : 'Resolved basic', skill)
   }
 
+  _updateCommandPreview(prefix = 'Preview', skill = null) {
+    if (!this.commandPreviewText || !this.enemySlots?.length || !this.characterSlots?.length) return
+    const activeSlot = this.characterSlots[this.activeIndex]
+    const selectedSkill = skill || this._selectedSkillFor(activeSlot.characterData)
+    const preview = buildCommandMatchupPreview(selectedSkill, this.enemySlots)
+    const counterLine = formatCounterDelta(preview.countersBefore, preview.countersAfter)
+    this.commandPreviewText
+      .setColor(preview.willBreakWeakness ? '#fff1a8' : '#d9f2ff')
+      .setText([
+        `${prefix}: ${preview.enemyName}`,
+        preview.resolvedEffect,
+        counterLine,
+        preview.tacticalImplication
+      ].filter(Boolean).join('\n'))
+  }
   _selectedSkillFor(characterData) {
     const skills = getCharacterSkills(characterData)
     const index = this.selectedSkillByCharacter.get(characterData.id) || 0
@@ -265,3 +293,13 @@ export default class BattleScene extends Phaser.Scene {
     }
   }
 }
+
+function formatCounterDelta(before, after) {
+  if (!before.length || !after.length) return 'Counters: no matching weakness gems visible.'
+  const parts = after.map((entry, i) => {
+    const previous = before[i] || entry
+    return `${GEM_LABEL[entry.type]} ${previous.current}/${entry.required} > ${entry.current}/${entry.required}`
+  })
+  return `Counters: ${parts.join(' | ')}`
+}
+

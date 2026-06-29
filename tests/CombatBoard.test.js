@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   accumulateWeakness,
+  buildCommandMatchupPreview,
   collectConsumedCells,
   chooseObstacleCell,
   getCharacterSkills,
@@ -105,6 +106,69 @@ describe('accumulateWeakness', () => {
     expect(second.progress).toEqual({})
   })
 })
+describe('buildCommandMatchupPreview', () => {
+  it('previews the strongest enemy weakness counter before a command resolves', () => {
+    const preview = buildCommandMatchupPreview(
+      { name: 'Glacial Bloom', requiredGems: ['water', 'water', 'light'] },
+      [
+        {
+          enemyData: { name: 'Cinder Wisp', weaknessGems: ['water', 'water', 'water', 'dark', 'dark'] },
+          weaknessProgress: { water: 1 },
+          alive: true
+        },
+        {
+          enemyData: { name: 'Moss Imp', weaknessGems: ['fire', 'fire', 'grass'] },
+          weaknessProgress: {},
+          alive: true
+        }
+      ]
+    )
+
+    expect(preview.enemyName).toBe('Cinder Wisp')
+    expect(preview.advantageGems).toEqual(['water', 'water'])
+    expect(preview.countersBefore).toEqual([{ type: 'water', current: 1, required: 3 }])
+    expect(preview.countersAfter).toContainEqual({ type: 'water', current: 3, required: 3 })
+    expect(preview.resolvedEffect).toContain('2 Water')
+    expect(preview.tacticalImplication).toContain('Dark')
+  })
+
+  it('shows a weakness break when the selected command completes every counter', () => {
+    const preview = buildCommandMatchupPreview(
+      { name: 'Blazing Cleave', requiredGems: ['fire', 'fire', 'grass'] },
+      [{
+        enemyData: { name: 'Moss Imp', weaknessGems: ['fire', 'fire', 'grass'] },
+        weaknessProgress: {},
+        alive: true
+      }]
+    )
+
+    expect(preview.enemyName).toBe('Moss Imp')
+    expect(preview.willBreakWeakness).toBe(true)
+    expect(preview.countersAfter).toEqual([
+      { type: 'fire', current: 2, required: 2 },
+      { type: 'grass', current: 1, required: 1 }
+    ])
+    expect(preview.resolvedEffect).toContain('breaks weakness')
+    expect(preview.tacticalImplication).toContain('attack timer reset')
+  })
+
+  it('returns neutral feedback when a command has no visible enemy counter', () => {
+    const preview = buildCommandMatchupPreview(
+      { name: 'Shade Step', requiredGems: ['dark', 'dark', 'fire'] },
+      [{
+        enemyData: { name: 'Iron Brute', weaknessGems: ['water', 'water', 'light'] },
+        weaknessProgress: {},
+        alive: true
+      }]
+    )
+
+    expect(preview.enemyName).toBe('No direct counter')
+    expect(preview.advantageGems).toEqual([])
+    expect(preview.countersBefore).toEqual([])
+    expect(preview.countersAfter).toEqual([])
+    expect(preview.tacticalImplication).toContain('switch targets')
+  })
+})
 
 describe('scaleEnemyForStage', () => {
   it('scales enemy max HP exponentially by stage without mutating the base enemy', () => {
@@ -155,3 +219,5 @@ describe('isElementGem', () => {
     expect(isElementGem('obstacle')).toBe(false)
   })
 })
+
+
