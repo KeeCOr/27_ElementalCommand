@@ -15,3 +15,8 @@ Turn the current biggest project issue into a small, executable improvement batc
 - If gameplay, UI, systems, content, controls, build behavior, or project scope changes, update the project planning document and update log before build/release.
 - If runtime source changes, run the nearest available validation and then perform the required build/package step from the project instructions.
 - If a folder or asset looks ambiguous, document the decision instead of deleting it.
+
+## 2026-06-30 Completion Note
+- Completed by v0.3.0/v0.3.1: command matchup preview, resolved effect feedback, before/after weakness counter text, and separated skill-selection/command-preview HUD groups are present.
+- Validation to rerun for release freshness: `npm test` and `npm run build`.
+- Next recommended batch: add a small visual flash or icon pulse when the previewed weakness counter is completed, reusing existing bitmap assets and keeping code-drawn shapes limited to HUD/progress indicators.
