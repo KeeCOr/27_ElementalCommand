@@ -251,7 +251,8 @@ npm run build    # npx vite build
 - The preview names the best enemy counter target, shows weakness counters before and after the selected command, and states the next tactical implication.
 - After a drag resolves, the same panel reports the resolved skill/basic command result against the updated enemy weakness state.
 - Pure helper coverage was added in `CombatBoard.test.js` for advantage preview, weakness break preview, and neutral/no-counter feedback.
-- Runtime audit: this batch added functional text feedback only. Existing Phaser graphics/circle/rectangle usage remains UI state, bars, rings, and progress indicators; no new SVG or code-drawn elemental icon resource was introduced.
+- 2026-07-01: When a selected skill preview predicts a full weakness break and the resolved weakness result confirms it on that enemy, the enemy slot plays a short pulse using existing `gem-*` bitmap textures over the weakness row.
+- Runtime audit: this command feedback now reuses existing bitmap gem textures for elemental pulses. Existing Phaser graphics/circle/rectangle usage remains UI state, bars, rings, and progress indicators; no new SVG or code-drawn elemental icon resource was introduced.
 
 
 ## v0.3.1 UI/HUD 개선

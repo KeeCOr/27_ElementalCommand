@@ -1,3 +1,9 @@
+## 2026-07-01 v0.4.0 Weakness Counter Pulse
+- Added a resolved weakness-break pulse that only plays when the selected skill preview predicted a full counter completion and the resolved enemy weakness actually completes.
+- The pulse reuses existing `gem-*` bitmap textures above the enemy weakness row; no new SVG or code-drawn elemental icon resource was added.
+- Added CombatBoard helper coverage for matched preview completion, non-breaking previews, and mismatched/unresolved enemy results.
+- Validation: `npm test` and `npm run build` were rerun for this no-release-copy batch.
+
 
 ## 2026-06-29 v0.3.0 Command Matchup Feedback
 - Added command matchup preview for selected skills in BattleScene.

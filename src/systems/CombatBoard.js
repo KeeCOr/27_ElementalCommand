@@ -189,6 +189,19 @@ export function buildCommandMatchupPreview(skill, enemySlots = []) {
       : `Next tactical implication: still needs ${formatGemCount(missing, 'requiredAfter')} to break weakness.`
   }
 }
+export function buildWeaknessCounterPulsePlan(preview, enemySlot, completed) {
+  if (!completed || !preview?.willBreakWeakness) return null
+  const enemyName = enemySlot?.enemyData?.name || enemySlot?.name
+  if (!enemyName || preview.enemyName !== enemyName) return null
+
+  const gemTypes = (preview.countersAfter || [])
+    .filter(entry => entry.current >= entry.required)
+    .map(entry => entry.type)
+    .filter(isElementGem)
+
+  if (gemTypes.length === 0) return null
+  return { enemyName, gemTypes }
+}
 
 function formatGemCount(entries, mode = 'add') {
   const parts = entries

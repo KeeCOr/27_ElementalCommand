@@ -93,6 +93,28 @@ export default class EnemySlot extends Phaser.GameObjects.Container {
     this.scene.cameras.main.flash(150, 120, 230, 255)
     return true
   }
+  playWeaknessCounterPulse(gemTypes = []) {
+    const pulseTypes = [...new Set(gemTypes.filter(type => GEM_COLORS[type]))].slice(0, 3)
+    if (pulseTypes.length === 0) return
+
+    pulseTypes.forEach((type, i, list) => {
+      const x = this.x + (i - (list.length - 1) / 2) * 22
+      const icon = this.scene.add.image(x, this.y + 68, `gem-${type}`)
+        .setDisplaySize(24, 24)
+        .setAlpha(0.92)
+        .setDepth(this.depth + 5)
+
+      this.scene.tweens.add({
+        targets: icon,
+        y: icon.y - 18,
+        alpha: { from: 0.92, to: 0 },
+        scale: { from: 0.5, to: 1.18 },
+        duration: 420,
+        ease: 'Cubic.easeOut',
+        onComplete: () => icon.destroy()
+      })
+    })
+  }
 
   takeDamage(amount) {
     this.hp = Math.max(0, this.hp - amount)

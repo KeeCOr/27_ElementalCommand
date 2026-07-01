@@ -20,3 +20,8 @@ Turn the current biggest project issue into a small, executable improvement batc
 - Completed by v0.3.0/v0.3.1: command matchup preview, resolved effect feedback, before/after weakness counter text, and separated skill-selection/command-preview HUD groups are present.
 - Validation to rerun for release freshness: `npm test` and `npm run build`.
 - Next recommended batch: add a small visual flash or icon pulse when the previewed weakness counter is completed, reusing existing bitmap assets and keeping code-drawn shapes limited to HUD/progress indicators.
+
+## 2026-07-01 Completion Note
+- Completed the recommended weakness-counter feedback batch: resolved full weakness counters now trigger a small enemy-slot gem pulse using existing bitmap gem textures.
+- Added pure helper coverage for when the pulse should and should not fire.
+- Web build refreshed with `npm run build`; executable packaging is not configured for this Vite-only project batch.

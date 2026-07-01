@@ -4,7 +4,7 @@ import CharacterSlot from '../objects/CharacterSlot.js'
 import EnemySlot from '../objects/EnemySlot.js'
 import { buildWeights } from '../systems/GemSpawner.js'
 import { checkSequence } from '../systems/SequenceChecker.js'
-import { buildCommandMatchupPreview, getCharacterSkills, isElementGem, resolveBattleParty, scaleEnemyForStage } from '../systems/CombatBoard.js'
+import { buildCommandMatchupPreview, buildWeaknessCounterPulsePlan, getCharacterSkills, isElementGem, resolveBattleParty, scaleEnemyForStage } from '../systems/CombatBoard.js'
 import { buildBattleHudGroups } from '../systems/BattleHudLayout.js'
 import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT } from '../constants.js'
 import { ENEMIES } from '../data/enemies.js'
@@ -181,11 +181,12 @@ export default class BattleScene extends Phaser.Scene {
 
     const skill = this._selectedSkillFor(activeSlot.characterData)
     const skillFired = checkSequence(gemTypes, skill.requiredGems)
+    const previewBeforeResolution = skillFired ? buildCommandMatchupPreview(skill, this.enemySlots) : null
     if (skillFired) this._fireSkill(activeSlot, skill)
     else this._fireBasicAttack(activeSlot)
 
     const consumed = this.board.consumePath(path)
-    this._applyWeaknessProgress(consumed.map(cell => cell.gemType).filter(isElementGem))
+    this._applyWeaknessProgress(consumed.map(cell => cell.gemType).filter(isElementGem), previewBeforeResolution)
     this._advanceCharacter()
     this._updateCommandPreview(skillFired ? 'Resolved skill' : 'Resolved basic', skill)
   }
@@ -245,10 +246,12 @@ export default class BattleScene extends Phaser.Scene {
     this._checkDefeat()
   }
 
-  _applyWeaknessProgress(destroyedTypes) {
+  _applyWeaknessProgress(destroyedTypes, previewBeforeResolution = null) {
     if (destroyedTypes.length === 0) return
     for (const slot of this.enemySlots) {
-      slot.applyWeakness(destroyedTypes)
+      const completed = slot.applyWeakness(destroyedTypes)
+      const pulsePlan = buildWeaknessCounterPulsePlan(previewBeforeResolution, slot, completed)
+      if (pulsePlan) slot.playWeaknessCounterPulse(pulsePlan.gemTypes)
     }
     this._checkVictory()
   }

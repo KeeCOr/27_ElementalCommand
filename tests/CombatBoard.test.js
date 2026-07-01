@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   accumulateWeakness,
+  buildWeaknessCounterPulsePlan,
   buildCommandMatchupPreview,
   collectConsumedCells,
   chooseObstacleCell,
@@ -167,6 +168,58 @@ describe('buildCommandMatchupPreview', () => {
     expect(preview.countersBefore).toEqual([])
     expect(preview.countersAfter).toEqual([])
     expect(preview.tacticalImplication).toContain('switch targets')
+  })
+})
+describe('buildWeaknessCounterPulsePlan', () => {
+  it('uses completed preview counters for the matching resolved enemy', () => {
+    const preview = {
+      enemyName: 'Moss Imp',
+      willBreakWeakness: true,
+      countersAfter: [
+        { type: 'fire', current: 2, required: 2 },
+        { type: 'grass', current: 1, required: 1 }
+      ]
+    }
+
+    const plan = buildWeaknessCounterPulsePlan(preview, {
+      enemyData: { name: 'Moss Imp' }
+    }, true)
+
+    expect(plan).toEqual({
+      enemyName: 'Moss Imp',
+      gemTypes: ['fire', 'grass']
+    })
+  })
+
+  it('does not pulse when the preview did not complete every counter', () => {
+    const preview = {
+      enemyName: 'Cinder Wisp',
+      willBreakWeakness: false,
+      countersAfter: [
+        { type: 'water', current: 2, required: 3 }
+      ]
+    }
+
+    expect(buildWeaknessCounterPulsePlan(preview, {
+      enemyData: { name: 'Cinder Wisp' }
+    }, true)).toBeNull()
+  })
+
+  it('does not pulse for a different enemy or unresolved weakness result', () => {
+    const preview = {
+      enemyName: 'Moss Imp',
+      willBreakWeakness: true,
+      countersAfter: [
+        { type: 'fire', current: 2, required: 2 }
+      ]
+    }
+
+    expect(buildWeaknessCounterPulsePlan(preview, {
+      enemyData: { name: 'Cinder Wisp' }
+    }, true)).toBeNull()
+    expect(buildWeaknessCounterPulsePlan(preview, {
+      enemyData: { name: 'Moss Imp' }
+    }, false)).toBeNull()
   })
 })
 
