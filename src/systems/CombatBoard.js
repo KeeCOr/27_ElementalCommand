@@ -11,6 +11,7 @@ export const OBSTACLE = 'obstacle'
 export const BOMB = 'bomb'
 export const LINE_CLEAR = 'lineClear'
 export const STAGE_HP_GROWTH = 1.75
+export const PREVIEW_WEAKNESS_DAMAGE_RATIO = 0.35
 
 export function isElementGem(type) {
   return GEM_TYPES.includes(type)
@@ -123,9 +124,11 @@ export function resolveBattleParty(party, roster, maxSize = 4) {
   return roster.slice(0, maxSize)
 }
 
-export function buildCommandMatchupPreview(skill, enemySlots = []) {
+export function buildCommandMatchupPreview(skill, enemySlots = [], attacker = null) {
   const commandGems = (skill?.requiredGems || []).filter(isElementGem)
   const aliveSlots = enemySlots.filter(slot => slot?.alive !== false)
+  const baseDamageTotal = attacker?.attack && skill?.multiplier ? Math.floor(attacker.attack * skill.multiplier) : null
+  const baseDamagePerEnemy = baseDamageTotal !== null ? Math.floor(baseDamageTotal / Math.max(1, aliveSlots.length)) : null
   let best = null
 
   for (const slot of aliveSlots) {
@@ -163,6 +166,9 @@ export function buildCommandMatchupPreview(skill, enemySlots = []) {
       countersAfter: [],
       willBreakWeakness: false,
       resolvedEffect: `${skill?.name || 'Command'} has no visible weakness counter.`,
+      damageLine: formatDamageLine(baseDamagePerEnemy),
+      reasonLine: 'Why favorable: no matching weakness is visible for this command.',
+      priority: 'neutral',
       tacticalImplication: 'Next tactical implication: switch targets or save matching gems for a visible counter.'
     }
   }
@@ -175,6 +181,8 @@ export function buildCommandMatchupPreview(skill, enemySlots = []) {
     for (let i = 0; i < entry.add; i++) advantageGems.push(entry.type)
   }
 
+  const weaknessBreakDamage = best.willBreakWeakness ? Math.ceil((best.enemyData.maxHp || best.enemyData.baseMaxHp || 0) * PREVIEW_WEAKNESS_DAMAGE_RATIO) : 0
+
   return {
     enemyName: best.enemyData.name,
     advantageGems,
@@ -184,6 +192,11 @@ export function buildCommandMatchupPreview(skill, enemySlots = []) {
     resolvedEffect: best.willBreakWeakness
       ? `${skill?.name || 'Command'} breaks weakness on ${best.enemyData.name}.`
       : `${skill?.name || 'Command'} adds ${formatGemCount(touched)} toward ${best.enemyData.name}.`,
+    damageLine: formatDamageLine(baseDamagePerEnemy, weaknessBreakDamage),
+    reasonLine: best.willBreakWeakness
+      ? `Why favorable: matches ${formatGemNames(touched)} and completes ${best.enemyData.name} weakness.`
+      : `Why favorable: advances ${formatGemNames(touched)} counter pressure on ${best.enemyData.name}.`,
+    priority: best.willBreakWeakness ? 'finish-counter' : 'advance-counter',
     tacticalImplication: best.willBreakWeakness
       ? 'Next tactical implication: attack timer reset opens a damage window.'
       : `Next tactical implication: still needs ${formatGemCount(missing, 'requiredAfter')} to break weakness.`
@@ -201,6 +214,21 @@ export function buildWeaknessCounterPulsePlan(preview, enemySlot, completed) {
 
   if (gemTypes.length === 0) return null
   return { enemyName, gemTypes }
+}
+
+function formatDamageLine(baseDamage, weaknessBreakDamage = 0) {
+  if (baseDamage === null || baseDamage === undefined) return null
+  return weaknessBreakDamage > 0
+    ? `Expected damage: ${baseDamage} base + ${weaknessBreakDamage} weakness break`
+    : `Expected damage: ${baseDamage} base`
+}
+
+function formatGemNames(entries) {
+  const names = []
+  for (const entry of entries || []) {
+    for (let i = 0; i < (entry.add || 0); i++) names.push(capitalizeElement(entry.type === 'grass' ? 'nature' : entry.type))
+  }
+  return names.length ? names.join(' + ') : 'no direct counter'
 }
 
 function formatGemCount(entries, mode = 'add') {

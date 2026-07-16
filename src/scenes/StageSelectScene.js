@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { STAGES } from '../data/stages.js'
 import { GAME_WIDTH, GAME_HEIGHT, UI_FONT } from '../constants.js'
+import { playAudioCue } from '../systems/AudioCues.js'
 
 export default class StageSelectScene extends Phaser.Scene {
   constructor() { super({ key: 'StageSelectScene' }) }
@@ -67,7 +68,10 @@ export default class StageSelectScene extends Phaser.Scene {
 
       hitZone.on('pointerover', () => card.setTint(0xcfefff))
       hitZone.on('pointerout', () => card.clearTint())
-      hitZone.on('pointerdown', () => this.scene.start('PartySelectScene', { stageId: stage.id }))
+      hitZone.on('pointerdown', () => {
+        playAudioCue(this, 'elementSelect')
+        this.scene.start('PartySelectScene', { stageId: stage.id })
+      })
     })
   }
 }

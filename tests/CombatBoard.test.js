@@ -153,6 +153,22 @@ describe('buildCommandMatchupPreview', () => {
     expect(preview.tacticalImplication).toContain('attack timer reset')
   })
 
+
+  it('previews estimated damage and explains why a command is favorable before selection resolves', () => {
+    const preview = buildCommandMatchupPreview(
+      { name: 'Blazing Cleave', requiredGems: ['fire', 'fire', 'grass'], multiplier: 3 },
+      [{
+        enemyData: { name: 'Moss Imp', maxHp: 500, weaknessGems: ['fire', 'fire', 'grass'] },
+        weaknessProgress: {},
+        alive: true
+      }],
+      { attack: 180 }
+    )
+
+    expect(preview.damageLine).toBe('Expected damage: 540 base + 175 weakness break')
+    expect(preview.reasonLine).toBe('Why favorable: matches Fire + Fire + Nature and completes Moss Imp weakness.')
+    expect(preview.priority).toBe('finish-counter')
+  })
   it('returns neutral feedback when a command has no visible enemy counter', () => {
     const preview = buildCommandMatchupPreview(
       { name: 'Shade Step', requiredGems: ['dark', 'dark', 'fire'] },

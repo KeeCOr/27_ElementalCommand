@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { CHARACTERS } from '../data/characters.js'
 import { GEM_LABEL, GAME_WIDTH, GAME_HEIGHT, UI_FONT } from '../constants.js'
+import { playAudioCue } from '../systems/AudioCues.js'
 
 export default class PartySelectScene extends Phaser.Scene {
   constructor() { super({ key: 'PartySelectScene' }) }
@@ -101,12 +102,14 @@ export default class PartySelectScene extends Phaser.Scene {
     })
     this.startHitZone.on('pointerdown', () => {
       if (this.selectedParty.length === 0) return
+      playAudioCue(this, 'commandConfirm')
       this.scene.start('BattleScene', { stageId: this.stageId, party: this.selectedParty })
     })
     this._refreshStartButton()
   }
 
   _toggleCharacter(char) {
+    playAudioCue(this, 'elementSelect')
     const idx = this.selectedParty.findIndex(c => c.id === char.id)
     if (idx >= 0) {
       this.selectedParty.splice(idx, 1)

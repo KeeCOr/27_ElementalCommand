@@ -5,6 +5,7 @@ const stageSelectSource = readFileSync('src/scenes/StageSelectScene.js', 'utf8')
 const partySelectSource = readFileSync('src/scenes/PartySelectScene.js', 'utf8')
 const battleSceneSource = readFileSync('src/scenes/BattleScene.js', 'utf8')
 const hexBoardSource = readFileSync('src/objects/HexBoard.js', 'utf8')
+const bootSceneSource = readFileSync('src/scenes/BootScene.js', 'utf8')
 
 describe('scene interaction targets', () => {
   it('uses explicit stage hit zones instead of relying on generated image bounds', () => {
@@ -58,5 +59,21 @@ describe('scene interaction targets', () => {
 
   it('shows the selected skill name in the active character hint', () => {
     expect(battleSceneSource).toMatch(/Selected: \$\{selectedSkill\.name\}/)
+  })
+  it('preloads audio cues from the boot scene', () => {
+    expect(bootSceneSource).toMatch(/preloadAudioCues\(this\)/)
+  })
+
+  it('plays feedback cues for stage, party, skill, attack, weakness, and battle results', () => {
+    expect(stageSelectSource).toMatch(/playAudioCue\(this,\s*'elementSelect'\)/)
+    expect(partySelectSource).toMatch(/playAudioCue\(this,\s*'elementSelect'\)/)
+    expect(partySelectSource).toMatch(/playAudioCue\(this,\s*'commandConfirm'\)/)
+    expect(battleSceneSource).toMatch(/playAudioCue\(this,\s*'elementSelect'\)/)
+    expect(battleSceneSource).toMatch(/playAudioCue\(this,\s*'skillAttack'\)/)
+    expect(battleSceneSource).toMatch(/playAudioCue\(this,\s*'basicAttack'\)/)
+    expect(battleSceneSource).toMatch(/playAudioCue\(this,\s*'weaknessBreak'\)/)
+    expect(battleSceneSource).toMatch(/playAudioCue\(this,\s*'enemyHit'\)/)
+    expect(battleSceneSource).toMatch(/selectBattleResultCue\('victory'\)/)
+    expect(battleSceneSource).toMatch(/selectBattleResultCue\('defeat'\)/)
   })
 })

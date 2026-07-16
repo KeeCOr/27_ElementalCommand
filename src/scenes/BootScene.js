@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { createArtAssets } from '../systems/ArtFactory.js'
 import { ART_SHEET_SOURCES, ART_SOURCE_IMAGES } from '../systems/AssetManifest.js'
+import { preloadAudioCues } from '../systems/AudioCues.js'
 
 export default class BootScene extends Phaser.Scene {
   constructor() { super({ key: 'BootScene' }) }
@@ -11,6 +12,7 @@ export default class BootScene extends Phaser.Scene {
     ART_SHEET_SOURCES.forEach(source => {
       this.load.image(source.key, source.path)
     })
+    preloadAudioCues(this)
   }
 
   create() {

@@ -3,6 +3,8 @@ export function buildBattleHudGroups({ characterName, selectedSkillName, preview
     `Target: ${preview.enemyName}`,
     preview.resolvedEffect,
     preview.counterLine,
+    preview.damageLine,
+    preview.reasonLine,
     preview.tacticalImplication,
   ].filter(Boolean)
 

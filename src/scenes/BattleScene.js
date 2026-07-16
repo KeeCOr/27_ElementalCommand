@@ -6,6 +6,7 @@ import { buildWeights } from '../systems/GemSpawner.js'
 import { checkSequence } from '../systems/SequenceChecker.js'
 import { buildCommandMatchupPreview, buildWeaknessCounterPulsePlan, getCharacterSkills, isElementGem, resolveBattleParty, scaleEnemyForStage } from '../systems/CombatBoard.js'
 import { buildBattleHudGroups } from '../systems/BattleHudLayout.js'
+import { playAudioCue, selectBattleResultCue } from '../systems/AudioCues.js'
 import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT } from '../constants.js'
 import { ENEMIES } from '../data/enemies.js'
 import { STAGES } from '../data/stages.js'
@@ -102,7 +103,7 @@ export default class BattleScene extends Phaser.Scene {
       .setDepth(8)
     this.hudGroupPanels = [
       this.add.image(HUD_GROUP_LEFT_X, COMMAND_PREVIEW_Y, 'ui-deploy-card').setDisplaySize(188, 54).setAlpha(0.86).setDepth(8),
-      this.add.image(HUD_GROUP_RIGHT_X, COMMAND_PREVIEW_Y, 'ui-deploy-card-selected').setDisplaySize(268, 54).setAlpha(0.9).setDepth(8)
+      this.add.image(HUD_GROUP_RIGHT_X, COMMAND_PREVIEW_Y, 'ui-deploy-card-selected').setDisplaySize(268, 70).setAlpha(0.9).setDepth(8)
     ]
     this.hudGroupLabels = [
       this.add.text(HUD_GROUP_LEFT_X - 82, COMMAND_PREVIEW_Y - 20, 'SKILL SELECTION', {
@@ -160,6 +161,7 @@ export default class BattleScene extends Phaser.Scene {
       hitZone.on('pointerover', () => card.setTint(selected ? 0xd4ffe8 : 0xcfefff))
       hitZone.on('pointerout', () => card.clearTint())
       hitZone.on('pointerdown', () => {
+        playAudioCue(this, 'elementSelect')
         this.selectedSkillByCharacter.set(active.characterData.id, i)
         this._updateSkillPanel()
       })
@@ -181,7 +183,7 @@ export default class BattleScene extends Phaser.Scene {
 
     const skill = this._selectedSkillFor(activeSlot.characterData)
     const skillFired = checkSequence(gemTypes, skill.requiredGems)
-    const previewBeforeResolution = skillFired ? buildCommandMatchupPreview(skill, this.enemySlots) : null
+    const previewBeforeResolution = skillFired ? buildCommandMatchupPreview(skill, this.enemySlots, activeSlot.characterData) : null
     if (skillFired) this._fireSkill(activeSlot, skill)
     else this._fireBasicAttack(activeSlot)
 
@@ -195,7 +197,7 @@ export default class BattleScene extends Phaser.Scene {
     if (!this.hudGroupTexts || !this.enemySlots?.length || !this.characterSlots?.length) return
     const activeSlot = this.characterSlots[this.activeIndex]
     const selectedSkill = skill || this._selectedSkillFor(activeSlot.characterData)
-    const preview = buildCommandMatchupPreview(selectedSkill, this.enemySlots)
+    const preview = buildCommandMatchupPreview(selectedSkill, this.enemySlots, activeSlot.characterData)
     const counterLine = formatCounterDelta(preview.countersBefore, preview.countersAfter)
     const groups = buildBattleHudGroups({
       characterName: activeSlot.characterData.name,
@@ -218,6 +220,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   _fireSkill(charSlot, skill) {
+    playAudioCue(this, 'skillAttack')
     const dmg = Math.floor(charSlot.characterData.attack * skill.multiplier)
     this._dealDamageToEnemies(dmg)
     this.cameras.main.flash(250, 255, 238, 150)
@@ -226,6 +229,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   _fireBasicAttack(charSlot) {
+    playAudioCue(this, 'basicAttack')
     this._dealDamageToEnemies(charSlot.characterData.attack)
   }
 
@@ -242,6 +246,7 @@ export default class BattleScene extends Phaser.Scene {
     if (alive.length === 0) return
     const target = alive[Math.floor(Math.random() * alive.length)]
     target.takeDamage(dmg)
+    playAudioCue(this, 'enemyHit')
     this.board.addObstacle()
     this._checkDefeat()
   }
@@ -251,7 +256,10 @@ export default class BattleScene extends Phaser.Scene {
     for (const slot of this.enemySlots) {
       const completed = slot.applyWeakness(destroyedTypes)
       const pulsePlan = buildWeaknessCounterPulsePlan(previewBeforeResolution, slot, completed)
-      if (pulsePlan) slot.playWeaknessCounterPulse(pulsePlan.gemTypes)
+      if (pulsePlan) {
+        playAudioCue(this, 'weaknessBreak')
+        slot.playWeaknessCounterPulse(pulsePlan.gemTypes)
+      }
     }
     this._checkVictory()
   }
@@ -301,6 +309,7 @@ export default class BattleScene extends Phaser.Scene {
     if (this.battleEnded) return
     if (this.enemySlots.every(s => !s.alive)) {
       this.battleEnded = true
+      playAudioCue(this, selectBattleResultCue('victory'))
       this.resultText.setText('Victory!').setVisible(true)
       this.time.delayedCall(2500, () => this.scene.start('StageSelectScene'))
     }
@@ -310,6 +319,7 @@ export default class BattleScene extends Phaser.Scene {
     if (this.battleEnded) return
     if (this.characterSlots.every(s => s.isDead())) {
       this.battleEnded = true
+      playAudioCue(this, selectBattleResultCue('defeat'))
       this.resultText.setText('Defeat...').setVisible(true)
       this.time.delayedCall(2500, () => this.scene.start('StageSelectScene'))
     }
