@@ -1,9 +1,11 @@
-export function buildBattleHudGroups({ characterName, selectedSkillName, preview }) {
+﻿export function buildBattleHudGroups({ characterName, selectedSkillName, preview }) {
   const previewLines = [
     `Target: ${preview.enemyName}`,
+    preview.matchupBadgeLine,
     preview.resolvedEffect,
     preview.counterLine,
     preview.damageLine,
+    preview.damageBadgeLine,
     preview.reasonLine,
     preview.tacticalImplication,
   ].filter(Boolean)

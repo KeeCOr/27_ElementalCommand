@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+﻿import { describe, expect, it } from 'vitest'
 import {
   accumulateWeakness,
   buildWeaknessCounterPulsePlan,
@@ -168,6 +168,8 @@ describe('buildCommandMatchupPreview', () => {
     expect(preview.damageLine).toBe('Expected damage: 540 base + 175 weakness break')
     expect(preview.reasonLine).toBe('Why favorable: matches Fire + Fire + Nature and completes Moss Imp weakness.')
     expect(preview.priority).toBe('finish-counter')
+    expect(preview.matchupBadgeLine).toBe('Matchup: ADVANTAGE - Fire + Fire + Nature')
+    expect(preview.damageBadgeLine).toBe('Damage delta: +175 from weakness break')
   })
   it('returns neutral feedback when a command has no visible enemy counter', () => {
     const preview = buildCommandMatchupPreview(

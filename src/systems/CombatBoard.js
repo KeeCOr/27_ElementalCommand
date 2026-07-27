@@ -1,4 +1,4 @@
-import { GEM_TYPES } from '../constants.js'
+﻿import { GEM_TYPES } from '../constants.js'
 import { areNeighbors } from './HexGeometry.js'
 import { spawnGem } from './GemSpawner.js'
 
@@ -167,6 +167,8 @@ export function buildCommandMatchupPreview(skill, enemySlots = [], attacker = nu
       willBreakWeakness: false,
       resolvedEffect: `${skill?.name || 'Command'} has no visible weakness counter.`,
       damageLine: formatDamageLine(baseDamagePerEnemy),
+      matchupBadgeLine: 'Matchup: NEUTRAL - no counter icon match',
+      damageBadgeLine: formatDamageBadgeLine(0),
       reasonLine: 'Why favorable: no matching weakness is visible for this command.',
       priority: 'neutral',
       tacticalImplication: 'Next tactical implication: switch targets or save matching gems for a visible counter.'
@@ -193,6 +195,8 @@ export function buildCommandMatchupPreview(skill, enemySlots = [], attacker = nu
       ? `${skill?.name || 'Command'} breaks weakness on ${best.enemyData.name}.`
       : `${skill?.name || 'Command'} adds ${formatGemCount(touched)} toward ${best.enemyData.name}.`,
     damageLine: formatDamageLine(baseDamagePerEnemy, weaknessBreakDamage),
+    matchupBadgeLine: formatMatchupBadgeLine(best.willBreakWeakness, touched),
+    damageBadgeLine: formatDamageBadgeLine(weaknessBreakDamage),
     reasonLine: best.willBreakWeakness
       ? `Why favorable: matches ${formatGemNames(touched)} and completes ${best.enemyData.name} weakness.`
       : `Why favorable: advances ${formatGemNames(touched)} counter pressure on ${best.enemyData.name}.`,
@@ -216,6 +220,16 @@ export function buildWeaknessCounterPulsePlan(preview, enemySlot, completed) {
   return { enemyName, gemTypes }
 }
 
+function formatMatchupBadgeLine(willBreakWeakness, entries) {
+  const matchup = willBreakWeakness ? 'ADVANTAGE' : 'PRESSURE'
+  return `Matchup: ${matchup} - ${formatGemNames(entries)}`
+}
+
+function formatDamageBadgeLine(weaknessBreakDamage = 0) {
+  return weaknessBreakDamage > 0
+    ? `Damage delta: +${weaknessBreakDamage} from weakness break`
+    : 'Damage delta: +0 no weakness bonus'
+}
 function formatDamageLine(baseDamage, weaknessBreakDamage = 0) {
   if (baseDamage === null || baseDamage === undefined) return null
   return weaknessBreakDamage > 0
