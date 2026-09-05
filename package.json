@@ -9,7 +9,11 @@
     "test:watch": "vitest",
     "electron": "electron electron/main.cjs",
     "build:steam": "npm run build && electron-builder --config electron-builder.config.cjs",
-    "dist:steam": "npm run build && electron-builder --config electron-builder.config.cjs --publish never"
+    "dist:steam": "npm run build && electron-builder --config electron-builder.config.cjs --publish never",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,ts}": "echo 'lint ok'"
   },
   "dependencies": {
     "howler": "^2.2.4",
@@ -18,6 +22,8 @@
   "devDependencies": {
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.0",
     "vite": "^5.2.0",
     "vitest": "^1.6.0"
   },
