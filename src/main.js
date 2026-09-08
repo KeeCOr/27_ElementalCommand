@@ -4,6 +4,9 @@ import StageSelectScene from './scenes/StageSelectScene.js'
 import PartySelectScene from './scenes/PartySelectScene.js'
 import BattleScene      from './scenes/BattleScene.js'
 import { GAME_WIDTH, GAME_HEIGHT } from './constants.js'
+import { installGameAudioRuntime } from './systems/GameAudioRuntime.js'
+
+installGameAudioRuntime('/assets/audio/original')
 
 new Phaser.Game({
   type: Phaser.AUTO,
