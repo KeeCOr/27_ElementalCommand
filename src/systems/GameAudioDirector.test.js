@@ -26,4 +26,14 @@ describe('GameAudioDirector', () => {
     director.setBgmVolume(8); director.setSfxVolume(-3); director.startFromGesture(); director.setMuted(true);
     expect(director.settings).toEqual({ bgmVolume: 1, sfxVolume: 0, muted: true }); expect(created[0].volume).toBe(0);
   });
+  it('caps simultaneous SFX at eight voices', () => {
+    const created = [], director = new GameAudioDirector({ audioFactory: factory(created), bgmUrl: '/bgm.ogg', cues: { action: '/action.ogg' } });
+    for (let i = 0; i < 9; i += 1) director.playCue('action');
+    expect(director.activeVoiceCount).toBe(8); expect(created[0].pause).toHaveBeenCalledOnce();
+  });
+  it('pauses and resumes BGM across visibility changes', () => {
+    const created = [], director = new GameAudioDirector({ audioFactory: factory(created), bgmUrl: '/bgm.ogg', cues: {} });
+    director.startFromGesture(); director.handleVisibility(true); director.handleVisibility(false);
+    expect(created[0].pause).toHaveBeenCalledOnce(); expect(created[0].play).toHaveBeenCalledTimes(2);
+  });
 });

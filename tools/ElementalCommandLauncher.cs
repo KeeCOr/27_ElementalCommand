@@ -1,115 +1,148 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 public static class ElementalCommandLauncher
 {
+    private const string ResourceName = "ElementalCommand.dist.zip";
+
+    [STAThread]
     public static void Main()
     {
-        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        string distDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dist");
-        if (!Directory.Exists(distDir))
+        Console.Title = "Elemental Command";
+        string runtimeDir = Path.Combine(Path.GetTempPath(), "ElementalCommand", "v0.9.0-" + Process.GetCurrentProcess().Id);
+        HttpListener listener = null;
+        try
         {
-            Console.Error.WriteLine("Cannot find the dist folder next to this launcher.");
-            Console.Error.WriteLine(baseDir);
-            Console.ReadLine();
-            return;
-        }
+            ExtractEmbeddedSite(runtimeDir);
+            string url;
+            listener = StartListener(out url);
+            HttpListener activeListener = listener;
+            Task.Factory.StartNew(delegate { ServeRequests(activeListener, runtimeDir); }, TaskCreationOptions.LongRunning);
 
-        string url;
-        using (HttpListener listener = StartListener(out url))
-        {
-            Task.Factory.StartNew(() => ServeRequests(listener, distDir));
-            Console.WriteLine("Elemental Command is running.");
-            Console.WriteLine(url);
+            Console.WriteLine("Elemental Command is running at " + url);
             Console.WriteLine("Keep this window open while playing. Press Enter to close.");
             if (Environment.GetEnvironmentVariable("EC_NO_BROWSER") != "1")
             {
                 Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             }
-            Console.ReadLine();
+
+            int smokeSeconds;
+            if (Int32.TryParse(Environment.GetEnvironmentVariable("EC_SMOKE_SECONDS"), out smokeSeconds) && smokeSeconds > 0)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(smokeSeconds));
+            }
+            else
+            {
+                Console.ReadLine();
+            }
+        }
+        catch (Exception error)
+        {
+            Console.Error.WriteLine(error);
+            if (!Console.IsInputRedirected) Console.ReadLine();
+        }
+        finally
+        {
+            if (listener != null) listener.Close();
+            TryDeleteDirectory(runtimeDir);
+        }
+    }
+
+    private static void ExtractEmbeddedSite(string destinationRoot)
+    {
+        Directory.CreateDirectory(destinationRoot);
+        string canonicalRoot = Path.GetFullPath(destinationRoot).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        Stream resource = Assembly.GetExecutingAssembly().GetManifestResourceStream(ResourceName);
+        if (resource == null) throw new InvalidOperationException("Embedded web build is missing.");
+        using (resource)
+        using (ZipArchive archive = new ZipArchive(resource, ZipArchiveMode.Read))
+        {
+            foreach (ZipArchiveEntry entry in archive.Entries)
+            {
+                string outputPath = Path.GetFullPath(Path.Combine(canonicalRoot, entry.FullName.Replace('/', Path.DirectorySeparatorChar)));
+                if (!outputPath.StartsWith(canonicalRoot, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Unsafe embedded path: " + entry.FullName);
+                if (String.IsNullOrEmpty(entry.Name))
+                {
+                    Directory.CreateDirectory(outputPath);
+                    continue;
+                }
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                using (Stream input = entry.Open())
+                using (FileStream output = File.Create(outputPath)) input.CopyTo(output);
+            }
         }
     }
 
     private static HttpListener StartListener(out string url)
     {
-        for (int port = 53127; port < 53147; port++)
+        for (int port = 53127; port < 53167; port++)
         {
             HttpListener listener = new HttpListener();
             string prefix = "http://127.0.0.1:" + port + "/";
             listener.Prefixes.Add(prefix);
-            try
-            {
-                listener.Start();
-                url = prefix;
-                return listener;
-            }
-            catch (HttpListenerException)
-            {
-                listener.Close();
-            }
+            try { listener.Start(); url = prefix; return listener; }
+            catch (HttpListenerException) { listener.Close(); }
         }
-
         throw new InvalidOperationException("No available local launcher port.");
     }
 
-    private static void ServeRequests(HttpListener listener, string distDir)
+    private static void ServeRequests(HttpListener listener, string rootDir)
     {
         while (listener.IsListening)
         {
             try
             {
                 HttpListenerContext context = listener.GetContext();
-                ThreadPool.QueueUserWorkItem(state => ServeFile(context, distDir));
+                ThreadPool.QueueUserWorkItem(delegate { ServeFile(context, rootDir); });
             }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
-            catch (HttpListenerException)
-            {
-                return;
-            }
+            catch (ObjectDisposedException) { return; }
+            catch (HttpListenerException) { return; }
         }
     }
 
-    private static void ServeFile(HttpListenerContext context, string distDir)
+    private static void ServeFile(HttpListenerContext context, string rootDir)
     {
         try
         {
-            string rawPath = Uri.UnescapeDataString(context.Request.Url.AbsolutePath.TrimStart('/'));
-            if (string.IsNullOrWhiteSpace(rawPath))
+            string relative = Uri.UnescapeDataString(context.Request.Url.AbsolutePath.TrimStart('/'));
+            if (String.IsNullOrWhiteSpace(relative)) relative = "index.html";
+            string canonicalRoot = Path.GetFullPath(rootDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            string filePath = Path.GetFullPath(Path.Combine(canonicalRoot, relative.Replace('/', Path.DirectorySeparatorChar)));
+            if (!filePath.StartsWith(canonicalRoot, StringComparison.OrdinalIgnoreCase) || !File.Exists(filePath))
             {
-                rawPath = "index.html";
+                context.Response.StatusCode = 404;
+                WriteText(context, "Not found");
+                return;
             }
-
-            string fullDist = Path.GetFullPath(distDir);
-            string filePath = Path.GetFullPath(Path.Combine(fullDist, rawPath.Replace('/', Path.DirectorySeparatorChar)));
-            if (!filePath.StartsWith(fullDist, StringComparison.OrdinalIgnoreCase) || !File.Exists(filePath))
-            {
-                filePath = Path.Combine(fullDist, "index.html");
-            }
-
             byte[] bytes = File.ReadAllBytes(filePath);
+            context.Response.StatusCode = 200;
             context.Response.ContentType = ContentTypeFor(filePath);
+            context.Response.Headers["Cache-Control"] = "no-store";
             context.Response.ContentLength64 = bytes.Length;
             context.Response.OutputStream.Write(bytes, 0, bytes.Length);
         }
-        catch (Exception ex)
+        catch (Exception error)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(ex.Message);
             context.Response.StatusCode = 500;
-            context.Response.ContentType = "text/plain; charset=utf-8";
-            context.Response.OutputStream.Write(bytes, 0, bytes.Length);
+            WriteText(context, error.Message);
         }
-        finally
-        {
-            context.Response.OutputStream.Close();
-        }
+        finally { context.Response.OutputStream.Close(); }
+    }
+
+    private static void WriteText(HttpListenerContext context, string value)
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes(value);
+        context.Response.ContentType = "text/plain; charset=utf-8";
+        context.Response.ContentLength64 = bytes.Length;
+        context.Response.OutputStream.Write(bytes, 0, bytes.Length);
     }
 
     private static string ContentTypeFor(string filePath)
@@ -117,15 +150,21 @@ public static class ElementalCommandLauncher
         switch (Path.GetExtension(filePath).ToLowerInvariant())
         {
             case ".html": return "text/html; charset=utf-8";
-            case ".js": return "application/javascript; charset=utf-8";
+            case ".js": return "text/javascript; charset=utf-8";
             case ".css": return "text/css; charset=utf-8";
             case ".png": return "image/png";
-            case ".jpg": return "image/jpeg";
-            case ".jpeg": return "image/jpeg";
+            case ".jpg": case ".jpeg": return "image/jpeg";
             case ".webp": return "image/webp";
-            case ".svg": return "image/svg+xml";
             case ".json": return "application/json; charset=utf-8";
+            case ".ogg": return "audio/ogg";
+            case ".wav": return "audio/wav";
             default: return "application/octet-stream";
         }
+    }
+
+    private static void TryDeleteDirectory(string path)
+    {
+        try { if (Directory.Exists(path)) Directory.Delete(path, true); }
+        catch { }
     }
 }

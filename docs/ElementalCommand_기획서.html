@@ -15,6 +15,7 @@
     .checklist li::before{content:"☐ ";font-size:16px}
     hr{border:none;border-top:1px solid #ddd;margin:28px 0}
     blockquote{border-left:4px solid #ddd;margin:0;padding:8px 16px;color:#555;background:#f9f9f9;border-radius:0 8px 8px 0}
+    .rev-1{color:#d62828}
     code{background:#f0f0f0;border-radius:4px;padding:2px 5px;font-size:13px}
   </style>
 </head>
@@ -287,5 +288,22 @@ npm run build    # npx vite build</pre>
     <li><strong>런타임 원칙</strong>: 핵심 오디오 레이어는 사전 생성된 음원을 사용하며 런타임 합성음에 의존하지 않는다.</li>
   </ul>
 </section>
+<section>
+  <h2>2026-09-08 v0.9.0 UI·오디오·포터블 품질 패스</h2>
+  <ul>
+    <li>HUD를 UI 범주로 통합하고 자원·상태 수치는 ImageGen PNG 아이콘과 숫자를 한 묶음으로 정리했다.</li>
+    <li>BGM/SFX 분리, 최대 8개 SFX, 위험·결과 덕킹, 비활성 창 일시정지를 적용했다.</li>
+    <li>입력·행동·위험·전환·결과 큐를 Kenney CC0 OGG로 교체했다.</li>
+    <li>포터블 런처는 웹 자산을 실행파일 안에 포함하고 <code>127.0.0.1</code> HTTP로 제공한다.</li>
+    <li class="rev-1">이전 “프로젝트 생성 PCM WAV 큐” 표기를 실제 Kenney 원본 파일 매핑으로 정정했다.</li>
+    <li>원본명과 라이선스는 <code>public/assets/audio/original/README.md</code>와 <code>KENNEY_LICENSE.txt</code>에 보존한다.</li>
+  </ul>
+</section>
+<section><h3>릴리즈 검증</h3><ul>
+  <li><code>npm test</code>: 14개 파일, 84개 테스트 통과</li>
+  <li><code>npm run portable</code>: v0.9.0 단일 포터블 생성 성공</li>
+  <li>내장 HTTP의 HTML·OGG 응답과 20초 생존 후 정상 종료 확인</li>
+  <li>SHA-256: <code>7B68836228FBC593534B55706FE0EA48538281293216859A3C0DDADDF33A597E</code></li>
+</ul></section>
 </body>
 </html>
