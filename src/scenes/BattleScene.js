@@ -7,6 +7,7 @@ import { checkSequence } from '../systems/SequenceChecker.js'
 import { buildCommandMatchupPreview, buildWeaknessCounterPulsePlan, getCharacterSkills, isElementGem, resolveBattleParty, scaleEnemyForStage } from '../systems/CombatBoard.js'
 import { buildBattleHudGroups } from '../systems/BattleHudLayout.js'
 import { playAudioCue, selectBattleResultCue } from '../systems/AudioCues.js'
+import { createUiStateFrame, createUiSurface } from '../systems/ArtFactory.js'
 import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT } from '../constants.js'
 import { ENEMIES } from '../data/enemies.js'
 import { STAGES } from '../data/stages.js'
@@ -18,7 +19,11 @@ const SKILL_PANEL_Y = 356
 const COMMAND_PREVIEW_Y = 404
 const HUD_GROUP_LEFT_X = 166
 const HUD_GROUP_RIGHT_X = 370
-const DEPLOYABLE_FRAME_KEYS = ['ui-deploy-card', 'ui-deploy-card-selected']
+const PANEL_DEPTH = 8
+const CARD_DEPTH = 9
+const HIGHLIGHT_DEPTH = 9.5
+const CONTENT_DEPTH = 10
+const HIT_ZONE_DEPTH = 11
 
 export default class BattleScene extends Phaser.Scene {
   constructor() { super({ key: 'BattleScene' }) }
@@ -99,33 +104,34 @@ export default class BattleScene extends Phaser.Scene {
 
   _setupSkillPanel() {
     this.skillCards = []
-    this.skillPanel = this.add.image(GAME_WIDTH / 2, SKILL_PANEL_Y, 'ui-skill-tray')
-      .setDepth(8)
+    this.skillPanel = createUiSurface(this, GAME_WIDTH / 2, SKILL_PANEL_Y, 356, 44)
+      .setDepth(PANEL_DEPTH)
     this.hudGroupPanels = [
-      this.add.image(HUD_GROUP_LEFT_X, COMMAND_PREVIEW_Y, 'ui-deploy-card').setDisplaySize(188, 54).setAlpha(0.86).setDepth(8),
-      this.add.image(HUD_GROUP_RIGHT_X, COMMAND_PREVIEW_Y, 'ui-deploy-card-selected').setDisplaySize(268, 70).setAlpha(0.9).setDepth(8)
+      createUiSurface(this, HUD_GROUP_LEFT_X, COMMAND_PREVIEW_Y, 188, 54).setAlpha(0.86).setDepth(PANEL_DEPTH),
+      createUiSurface(this, HUD_GROUP_RIGHT_X, COMMAND_PREVIEW_Y, 268, 70).setAlpha(0.9).setDepth(PANEL_DEPTH)
     ]
     this.hudGroupLabels = [
       this.add.text(HUD_GROUP_LEFT_X - 82, COMMAND_PREVIEW_Y - 20, 'SKILL SELECTION', {
         fontSize: '8px', fontFamily: UI_FONT, color: '#fff1a8', fontStyle: 'bold'
-      }).setDepth(10),
+      }).setDepth(CONTENT_DEPTH),
       this.add.text(HUD_GROUP_RIGHT_X - 122, COMMAND_PREVIEW_Y - 20, 'COMMAND PREVIEW', {
         fontSize: '8px', fontFamily: UI_FONT, color: '#d9f2ff', fontStyle: 'bold'
-      }).setDepth(10)
+      }).setDepth(CONTENT_DEPTH)
     ]
     this.hudGroupTexts = [
       this.add.text(HUD_GROUP_LEFT_X - 82, COMMAND_PREVIEW_Y - 6, '', {
         fontSize: '9px', fontFamily: UI_FONT, color: '#ffffff', lineSpacing: 2, wordWrap: { width: 158 }
-      }).setDepth(10),
+      }).setDepth(CONTENT_DEPTH),
       this.add.text(HUD_GROUP_RIGHT_X - 122, COMMAND_PREVIEW_Y - 6, '', {
         fontSize: '8px', fontFamily: UI_FONT, color: '#d9f2ff', lineSpacing: 1, wordWrap: { width: 236 }
-      }).setDepth(10)
+      }).setDepth(CONTENT_DEPTH)
     ]
   }
 
   _updateSkillPanel() {
     for (const entry of this.skillCards) {
       entry.card.destroy()
+      entry.highlight.destroy()
       entry.hitZone.destroy()
       entry.name.destroy()
       entry.gems.destroy()
@@ -141,31 +147,35 @@ export default class BattleScene extends Phaser.Scene {
     skills.forEach((skill, i) => {
       const x = GAME_WIDTH / 2 - ((skills.length - 1) * 112) / 2 + i * 112
       const selected = skill.id === selectedSkill.id
-      const card = this.add.image(x, SKILL_PANEL_Y, selected ? 'ui-skill-card-selected' : 'ui-skill-card')
-        .setDepth(9)
+      const card = createUiStateFrame(this, x, SKILL_PANEL_Y, 104, 38, selected ? 'selected' : 'normal')
+        .setDepth(CARD_DEPTH)
+      const highlight = this.add.rectangle(x, SKILL_PANEL_Y, 104, 38)
+        .setStrokeStyle(2, selected ? 0xd4ffe8 : 0xcfefff, 0.9)
+        .setDepth(HIGHLIGHT_DEPTH)
+        .setVisible(false)
       const hitZone = this.add.zone(x, SKILL_PANEL_Y, 104, 46)
-        .setDepth(11)
+        .setDepth(HIT_ZONE_DEPTH)
         .setInteractive({ useHandCursor: true })
       const name = this.add.text(x, SKILL_PANEL_Y - 8, skill.name, {
         fontSize: '9px',
         fontFamily: UI_FONT,
         color: '#ffffff',
         fontStyle: 'bold'
-      }).setOrigin(0.5).setDepth(10)
+      }).setOrigin(0.5).setDepth(CONTENT_DEPTH)
       const gems = this.add.text(x, SKILL_PANEL_Y + 9, skill.requiredGems.map(type => GEM_LABEL[type]).join(' > '), {
         fontSize: '10px',
         fontFamily: UI_FONT,
         color: '#fff1a8'
-      }).setOrigin(0.5).setDepth(10)
+      }).setOrigin(0.5).setDepth(CONTENT_DEPTH)
 
-      hitZone.on('pointerover', () => card.setTint(selected ? 0xd4ffe8 : 0xcfefff))
-      hitZone.on('pointerout', () => card.clearTint())
+      hitZone.on('pointerover', () => highlight.setVisible(true))
+      hitZone.on('pointerout', () => highlight.setVisible(false))
       hitZone.on('pointerdown', () => {
         playAudioCue(this, 'elementSelect')
         this.selectedSkillByCharacter.set(active.characterData.id, i)
         this._updateSkillPanel()
       })
-      this.skillCards.push({ card, hitZone, name, gems })
+      this.skillCards.push({ card, highlight, hitZone, name, gems })
     })
 
     this._updateCommandPreview('Preview')

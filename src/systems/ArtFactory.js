@@ -9,6 +9,14 @@ import {
   ART_SHEET_SOURCES,
   ART_SOURCE_IMAGES
 } from './AssetManifest.js'
+import { getUiSkinStateFrame } from './UiSkin.js'
+
+export const UI_SURFACE_TEXTURE_KEY = 'ec-surface-frame-9s'
+export const UI_STATE_TEXTURE_KEY = 'ec-state-frame-atlas'
+
+// [left, top, right, bottom] margins declared by the shipped PNG skin.
+const UI_SURFACE_MARGINS = [24, 18, 24, 18]
+const UI_STATE_MARGINS = [20, 14, 20, 14]
 
 const GEM_PALETTES = {
   fire: { main: 0xf25a3d, dark: 0x7b1f24, light: 0xffd18a, accent: 0xff8f2e },
@@ -50,12 +58,37 @@ const HERO_ART = {
 }
 
 
+/** Nine-sliced background surface (trays, HUD group panels). */
+export function createUiSurface(scene, x, y, width, height) {
+  return addNineSlice(scene, x, y, UI_SURFACE_TEXTURE_KEY, undefined, width, height, UI_SURFACE_MARGINS)
+}
+
+/** Nine-sliced state frame (cards, buttons) driven by the state atlas. */
+export function createUiStateFrame(scene, x, y, width, height, state = 'normal') {
+  return addNineSlice(scene, x, y, UI_STATE_TEXTURE_KEY, getUiSkinStateFrame(state), width, height, UI_STATE_MARGINS)
+}
+
+/** Swaps an existing state frame to another atlas state without resizing it. */
+export function applyUiStateFrame(panel, state) {
+  if (!panel) return panel
+  const [left, top, right, bottom] = UI_STATE_MARGINS
+  // Capture the output size first: swapping the frame can reset it to the source frame size.
+  const width = panel.width
+  const height = panel.height
+  panel.setTexture(UI_STATE_TEXTURE_KEY, getUiSkinStateFrame(state))
+  panel.setSlices(width, height, left, right, top, bottom)
+  return panel
+}
+
+function addNineSlice(scene, x, y, key, frame, width, height, [left, top, right, bottom]) {
+  return scene.add.nineslice(x, y, key, frame, width, height, left, right, top, bottom)
+}
+
 export function createArtAssets(scene) {
   if (scene.textures.exists('bg-menu')) return
 
   if (hasCompleteImageArtPack(scene)) {
     createImageBackedArtAssets(scene)
-    createPanelTextures(scene)
     return
   }
 
@@ -63,7 +96,6 @@ export function createArtAssets(scene) {
   ART_BACKGROUNDS.forEach(background => {
     createBackground(scene, background.key, background.top, background.bottom, background.accent)
   })
-  createPanelTextures(scene)
   ART_GEMS.forEach(gem => createGemTexture(scene, gem.id, GEM_PALETTES[gem.id]))
   createGemTexture(scene, 'bomb', GEM_PALETTES.bomb)
   createGemTexture(scene, 'lineClear', GEM_PALETTES.lineClear)
@@ -158,131 +190,6 @@ function createBackground(scene, key, topColor, bottomColor, accentColor) {
   }
   g.generateTexture(key, GAME_WIDTH, GAME_HEIGHT)
   g.destroy()
-}
-
-function createPanelTextures(scene) {
-  const g = scene.add.graphics()
-  drawFrame(g, 300, 76, {
-    fill: 0x101827,
-    edge: 0x5ae5ff,
-    accent: 0xffd46a,
-    glow: 0x1d4e72
-  })
-  g.generateTexture('ui-stage-card', 300, 76)
-  g.clear()
-  drawFrame(g, 214, 116, {
-    fill: 0x0e1728,
-    edge: 0x8de8ff,
-    accent: 0xfff1a8,
-    glow: 0x213353
-  })
-  g.generateTexture('ui-party-card', 214, 116)
-  g.clear()
-  drawButton(g, 224, 58, {
-    fill: 0x1d6b48,
-    fill2: 0x269a67,
-    edge: 0x6affb6,
-    shine: 0xd8ffe9
-  })
-  g.generateTexture('ui-button-ready', 224, 58)
-  g.clear()
-  drawButton(g, 224, 58, {
-    fill: 0x252f44,
-    fill2: 0x313b51,
-    edge: 0x77839c,
-    shine: 0xe6ecff
-  })
-  g.generateTexture('ui-button-disabled', 224, 58)
-  g.clear()
-  drawFrame(g, 104, 38, {
-    fill: 0x10182b,
-    edge: 0xffffff,
-    accent: 0x58d7ff,
-    glow: 0x18294a,
-    alpha: 0.9
-  })
-  g.generateTexture('ui-skill-card', 104, 38)
-  g.clear()
-  drawFrame(g, 104, 38, {
-    fill: 0x1f5b4c,
-    edge: 0x87ffca,
-    accent: 0xfff1a8,
-    glow: 0x2d765f,
-    alpha: 0.98
-  })
-  g.generateTexture('ui-skill-card-selected', 104, 38)
-  g.clear()
-  drawFrame(g, 92, 40, {
-    fill: 0x162236,
-    edge: 0x77e7ff,
-    accent: 0xffd46a,
-    glow: 0x223f5c,
-    alpha: 0.9
-  })
-  g.generateTexture('ui-deploy-card', 92, 40)
-  g.clear()
-  drawFrame(g, 92, 40, {
-    fill: 0x245345,
-    edge: 0x8dffca,
-    accent: 0xfff1a8,
-    glow: 0x2e725d,
-    alpha: 0.98
-  })
-  g.generateTexture('ui-deploy-card-selected', 92, 40)
-  g.clear()
-  drawFrame(g, 356, 48, {
-    fill: 0x07101f,
-    edge: 0xffd46a,
-    accent: 0x77e7ff,
-    glow: 0x172a3f,
-    alpha: 0.66
-  })
-  g.generateTexture('ui-deploy-tray', 356, 48)
-  g.clear()
-  drawFrame(g, 356, 44, {
-    fill: 0x07101f,
-    edge: 0x58d7ff,
-    accent: 0x87ffca,
-    glow: 0x0d2038,
-    alpha: 0.68
-  })
-  g.generateTexture('ui-skill-tray', 356, 44)
-  g.destroy()
-}
-
-function drawFrame(g, width, height, {
-  fill,
-  edge,
-  accent,
-  glow,
-  alpha = 0.92
-}) {
-  g.fillStyle(0x000000, 0.28).fillRoundedRect(3, 4, width - 6, height - 4, 8)
-  g.fillStyle(glow, 0.42).fillRoundedRect(0, 0, width, height, 8)
-  g.fillStyle(fill, alpha).fillRoundedRect(3, 3, width - 6, height - 6, 7)
-  g.fillStyle(0xffffff, 0.07).fillRoundedRect(8, 7, width - 16, Math.max(10, height * 0.28), 5)
-  g.lineStyle(2, edge, 0.62).strokeRoundedRect(2, 2, width - 4, height - 4, 7)
-  g.lineStyle(1, 0xffffff, 0.18).strokeRoundedRect(6, 6, width - 12, height - 12, 5)
-  g.fillStyle(accent, 0.72)
-  g.fillTriangle(11, 6, 28, 6, 11, 23)
-  g.fillTriangle(width - 11, height - 6, width - 28, height - 6, width - 11, height - 23)
-}
-
-function drawButton(g, width, height, {
-  fill,
-  fill2,
-  edge,
-  shine
-}) {
-  g.fillStyle(0x000000, 0.35).fillRoundedRect(4, 6, width - 8, height - 4, 9)
-  g.fillStyle(fill2, 0.98).fillRoundedRect(0, 0, width, height, 9)
-  g.fillStyle(fill, 1).fillRoundedRect(4, 5, width - 8, height - 10, 7)
-  g.fillStyle(shine, 0.16).fillRoundedRect(10, 8, width - 20, 16, 6)
-  g.lineStyle(3, edge, 0.86).strokeRoundedRect(2, 2, width - 4, height - 4, 8)
-  g.lineStyle(1, 0xffffff, 0.22).strokeRoundedRect(7, 7, width - 14, height - 14, 5)
-  g.fillStyle(0xffffff, 0.16)
-  g.fillTriangle(16, 12, 34, 12, 16, 30)
-  g.fillTriangle(width - 16, height - 12, width - 34, height - 12, width - 16, height - 30)
 }
 
 function createGemTexture(scene, type, palette) {
