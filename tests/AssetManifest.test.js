@@ -11,8 +11,8 @@ import {
   textureKeyForEnemy,
   textureKeyForGem
 } from '../src/systems/AssetManifest.js'
-import { validateArtManifestCoverage } from '../src/systems/ArtFactory.js'
-import { GEM_TYPES } from '../src/constants.js'
+import { getCoverCropRect, validateArtManifestCoverage } from '../src/systems/ArtFactory.js'
+import { GEM_TYPES, UI_FONT } from '../src/constants.js'
 import { CHARACTERS } from '../src/data/characters.js'
 import { ENEMIES } from '../src/data/enemies.js'
 
@@ -97,5 +97,37 @@ describe('AssetManifest', () => {
     expect(() => validateArtManifestCoverage({
       gems: [...ART_GEMS, { id: 'storm', key: 'gem-storm' }]
     })).toThrow('Missing procedural art definition for gem: storm')
+  })
+
+  it('crops a 1280x720 landscape source into a 480x854 portrait rect symmetrically, keeping full source height', () => {
+    const rect = getCoverCropRect(1280, 720, 480, 854)
+
+    expect(rect.y).toBe(0)
+    expect(rect.height).toBe(720)
+    expect(rect.width).toBeCloseTo(404.683840749414, 6)
+    expect(rect.x).toBeCloseTo(437.658079625293, 6)
+    // Symmetric left/right crop: the two shaved-off margins must be equal.
+    expect(rect.x).toBeCloseTo(1280 - rect.width - rect.x, 6)
+  })
+
+  it('crops a 941x1672 near-portrait source into 480x854 with a mathematically exact, centered, near-lossless cover crop', () => {
+    const rect = getCoverCropRect(941, 1672, 480, 854)
+
+    expect(rect.y).toBe(0)
+    expect(rect.height).toBe(1672)
+    expect(rect.width).toBeCloseTo(939.765807962528, 6)
+    expect(rect.x).toBeCloseTo(0.617096018736, 6)
+    expect(rect.x).toBeCloseTo(941 - rect.width - rect.x, 6)
+  })
+
+  it('returns the full source rectangle when source and target share the same aspect ratio', () => {
+    const rect = getCoverCropRect(480, 854, 240, 427)
+
+    expect(rect).toEqual({ x: 0, y: 0, width: 480, height: 854 })
+  })
+
+  it('shares a UI font stack that includes Korean-capable fonts on every platform', () => {
+    expect(UI_FONT).toContain('Noto Sans KR')
+    expect(UI_FONT).toContain('Malgun Gothic')
   })
 })

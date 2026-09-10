@@ -30,4 +30,4 @@ export const BOARD_CONFIG = {
 
 export const GAME_WIDTH = 480
 export const GAME_HEIGHT = 854
-export const UI_FONT = 'Arial, Helvetica, sans-serif'
+export const UI_FONT = '"Noto Sans KR", "Malgun Gothic", Arial, Helvetica, sans-serif'

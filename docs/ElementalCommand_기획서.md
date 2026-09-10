@@ -284,3 +284,18 @@ npm run build    # npx vite build
 - `npm run portable`: v0.9.0 단일 포터블 생성 성공
 - 실제 실행: 내장 HTTP의 HTML·OGG 응답과 20초 프로세스 생존 후 정상 종료 확인
 - SHA-256: `7B68836228FBC593534B55706FE0EA48538281293216859A3C0DDADDF33A597E`
+
+## 2026-09-10 v0.10.0 라스터 UI·루프백·오디오 검증 패스
+
+- UI 서페이스와 상태 프레임은 `src/systems/ArtFactory.js`의 `createUiSurface`/`createUiStateFrame`이 PNG 나인슬라이스(`ec-surface-frame-9s`, `ec-state-frame-atlas`)로 렌더링하며, `src/`·`public/`·`electron/` 전 범위에서 `.svg` 참조가 남아있지 않음을 확인했다.
+- `src/main.js`는 `Phaser.Scale.FIT` + `CENTER_BOTH` 설정으로 창 크기와 무관하게 게임 종횡비를 유지한다.
+- 녹음 오디오 자산은 `public/assets/audio/original/`(6개 OGG)과 `public/assets/audio/`(8개 OGG)로 구성되며, `original/README.md`에 Kenney CC0 원본 매핑이 기록되어 있다. `GameAudioRuntime.js`는 `visibilitychange`/`blur`/`focus` 이벤트로 창이 비활성화되면 재생을 멈춘다.
+- 포터블 런처(`tools/ElementalCommandLauncher.cs`)는 `http://127.0.0.1:{port}/` 루프백 HTTP로 내장 웹 빌드를 그대로 제공한다.
+
+## 2026-09-10 v0.10.1 배경 크롭·폰트 스택 정정
+
+- `src/systems/ArtFactory.js`가 `getCoverCropRect(sourceWidth, sourceHeight, targetWidth, targetHeight)`를 export한다. 이 함수는 소스와 타깃의 종횡비 차이를 CSS `background-size: cover`와 동일한 방식으로 계산해, 중앙 기준으로 대칭 크롭한 `{x, y, width, height}`를 반환한다.
+- `createScaledImageTexture`는 이제 이 크롭 사각형을 9인자 `ctx.drawImage(source, x, y, width, height, 0, 0, targetWidth, targetHeight)` 호출에 그대로 사용해, 배경 원본을 늘려서 채우지 않고 항상 중앙 기준으로 크롭해 채운다.
+- 현재 `public/` 배경 원본(941x1672)은 480x854 타깃과 종횡비가 거의 같아 가로 방향으로 약 0.6px만 크롭되는 거의 무손실 매핑이다.
+- 과거에 쓰였던 1280x720 같은 가로형 원본이 들어와도 더 이상 세로로 늘어나지 않고, 중앙 기준 세로 전체·가로 대칭 크롭으로 처리된다.
+- `src/constants.js`의 `UI_FONT`가 `"Noto Sans KR", "Malgun Gothic", Arial, Helvetica, sans-serif` 순서로 바뀌어, OS 기본 산세리프 이전에 한글 글리프를 보장하는 폰트를 우선 적용한다.

@@ -124,13 +124,34 @@ function createImageBackedArtAssets(scene) {
   })
 }
 
+/** Centered CSS-cover crop rectangle within a sourceWidth x sourceHeight image. */
+export function getCoverCropRect(sourceWidth, sourceHeight, targetWidth, targetHeight) {
+  ;[sourceWidth, sourceHeight, targetWidth, targetHeight].forEach(value => {
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new Error('getCoverCropRect requires positive, finite dimensions')
+    }
+  })
+
+  const scale = Math.max(targetWidth / sourceWidth, targetHeight / sourceHeight)
+  const width = targetWidth / scale
+  const height = targetHeight / scale
+
+  return {
+    x: (sourceWidth - width) / 2,
+    y: (sourceHeight - height) / 2,
+    width,
+    height
+  }
+}
+
 function createScaledImageTexture(scene, sourceKey, targetKey, width, height) {
   const source = scene.textures.get(sourceKey).getSourceImage()
   const texture = scene.textures.createCanvas(targetKey, width, height)
   const ctx = texture.getContext()
   ctx.imageSmoothingEnabled = true
   ctx.imageSmoothingQuality = 'high'
-  ctx.drawImage(source, 0, 0, source.width, source.height, 0, 0, width, height)
+  const crop = getCoverCropRect(source.width, source.height, width, height)
+  ctx.drawImage(source, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height)
   texture.refresh()
 }
 
