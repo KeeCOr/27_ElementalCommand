@@ -19,8 +19,8 @@ describe('scene interaction targets', () => {
   })
 
   it('uses image-backed stage card frames', () => {
-    expect(stageSelectSource).toMatch(/'ui-stage-card'/)
-    expect(stageSelectSource).toMatch(/'ui-button-ready'/)
+    expect(stageSelectSource).toMatch(/'ec-surface-frame-9s'/)
+    expect(stageSelectSource).toMatch(/getUiSkinStateFrame\('ready'\)/)
   })
 
   it('uses explicit party card hit zones instead of relying on generated image bounds', () => {
@@ -35,9 +35,9 @@ describe('scene interaction targets', () => {
   })
 
   it('uses button and frame textures on the party screen', () => {
-    expect(partySelectSource).toMatch(/'ui-party-card'/)
-    expect(partySelectSource).toMatch(/'ui-button-disabled'/)
-    expect(partySelectSource).toMatch(/'ui-button-ready'/)
+    expect(partySelectSource).toMatch(/'ec-surface-frame-9s'/)
+    expect(partySelectSource).toMatch(/getUiSkinStateFrame\('disabled'\)/)
+    expect(partySelectSource).toMatch(/_applyStartState\(ready \? 'ready'/)
   })
 
   it('keeps the skill selector above the hex board input area', () => {
@@ -50,11 +50,10 @@ describe('scene interaction targets', () => {
     expect(battleSceneSource).toMatch(/hitZone\.on\('pointerdown'/)
   })
 
-  it('uses frame textures for battle skill and deployable panels', () => {
-    expect(battleSceneSource).toMatch(/'ui-skill-card'/)
-    expect(battleSceneSource).toMatch(/'ui-skill-card-selected'/)
-    expect(battleSceneSource).toMatch(/'ui-deploy-card'/)
-    expect(battleSceneSource).toMatch(/'ui-deploy-card-selected'/)
+  it('uses frame textures for battle skill panels', () => {
+    expect(battleSceneSource).toMatch(/createUiStateFrame/)
+    expect(battleSceneSource).toMatch(/'selected'/)
+    expect(battleSceneSource).toMatch(/'normal'/)
   })
 
   it('shows the selected skill name in the active character hint', () => {
