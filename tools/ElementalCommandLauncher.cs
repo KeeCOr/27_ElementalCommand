@@ -16,7 +16,7 @@ public static class ElementalCommandLauncher
     public static void Main()
     {
         Console.Title = "Elemental Command";
-        string runtimeDir = Path.Combine(Path.GetTempPath(), "ElementalCommand", "v0.9.0-" + Process.GetCurrentProcess().Id);
+        string runtimeDir = Path.Combine(Path.GetTempPath(), "ElementalCommand", "runtime-" + Process.GetCurrentProcess().Id);
         HttpListener listener = null;
         try
         {
