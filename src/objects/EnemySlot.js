@@ -16,6 +16,9 @@ export default class EnemySlot extends Phaser.GameObjects.Container {
     this.alive = true
     this.weaknessProgress = {}
 
+    this.panel = scene.add.nineslice(0, 2, 'ec-enemy-slot-frame-9s', null, 124, 196, 16, 16, 14, 14)
+    this.add(this.panel)
+
     this.aura = scene.add.graphics()
     this.aura.fillStyle(enemyData.color, 0.16).fillCircle(0, -18, 52)
     this.add(this.aura)
@@ -33,8 +36,7 @@ export default class EnemySlot extends Phaser.GameObjects.Container {
     }).setOrigin(0.5)
     this.add(this.nameText)
 
-    this.hpBarBg = scene.add.rectangle(0, 42, SLOT_W, 8, 0x161827)
-      .setStrokeStyle(1, 0xffffff, 0.18)
+    this.hpBarBg = scene.add.nineslice(0, 42, 'ec-hp-shell-9s', null, SLOT_W, 8, 6, 6, 3, 3)
     this.add(this.hpBarBg)
 
     this.hpBar = scene.add.rectangle(-SLOT_W / 2, 42, SLOT_W, 8, 0xff5b5b).setOrigin(0, 0.5)

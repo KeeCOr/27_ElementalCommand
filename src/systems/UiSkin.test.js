@@ -30,4 +30,31 @@ describe('UiSkin', () => {
     expect(getUiSkinStateFrame('')).toBe(UI_SKIN_STATE_FRAMES.normal);
     expect(getUiSkinStateFrame('toString')).toBe(UI_SKIN_STATE_FRAMES.normal);
   });
+
+  it('declares a text-free character slot frame as a nine-sliced image with exact insets', () => {
+    expect(assetByKey('ec-character-slot-frame-9s')).toEqual({
+      key: 'ec-character-slot-frame-9s',
+      type: 'image',
+      path: 'assets/ec-character-slot-frame-9s.png',
+      nineSlice: [14, 12, 14, 12]
+    });
+  });
+
+  it('declares a text-free enemy slot frame as a nine-sliced image with exact insets', () => {
+    expect(assetByKey('ec-enemy-slot-frame-9s')).toEqual({
+      key: 'ec-enemy-slot-frame-9s',
+      type: 'image',
+      path: 'assets/ec-enemy-slot-frame-9s.png',
+      nineSlice: [16, 14, 16, 14]
+    });
+  });
+
+  it('declares a text-free empty HP shell as a nine-sliced image with exact insets', () => {
+    expect(assetByKey('ec-hp-shell-9s')).toEqual({
+      key: 'ec-hp-shell-9s',
+      type: 'image',
+      path: 'assets/ec-hp-shell-9s.png',
+      nineSlice: [6, 3, 6, 3]
+    });
+  });
 });

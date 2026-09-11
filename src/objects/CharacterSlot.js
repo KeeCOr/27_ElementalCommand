@@ -10,6 +10,9 @@ export default class CharacterSlot extends Phaser.GameObjects.Container {
     this.characterData = characterData
     this.hp = characterData.maxHp
 
+    this.panel = scene.add.nineslice(0, 0, 'ec-character-slot-frame-9s', null, SLOT_W, SLOT_H, 14, 14, 12, 12)
+    this.add(this.panel)
+
     this.bg = scene.add.graphics()
     this._drawFrame(0.35)
     this.add(this.bg)
@@ -27,7 +30,7 @@ export default class CharacterSlot extends Phaser.GameObjects.Container {
     }).setOrigin(0.5)
     this.add(this.nameText)
 
-    this.hpBarBg = scene.add.rectangle(0, -30, 78, 7, 0x111827)
+    this.hpBarBg = scene.add.nineslice(0, -30, 'ec-hp-shell-9s', null, 78, 7, 6, 6, 3, 3)
     this.add(this.hpBarBg)
 
     this.hpBar = scene.add.rectangle(-39, -30, 78, 7, 0x44ff88).setOrigin(0, 0.5)
@@ -74,7 +77,6 @@ export default class CharacterSlot extends Phaser.GameObjects.Container {
 
   _drawFrame(alpha) {
     this.bg.clear()
-    this.bg.fillStyle(0x101729, 0.88).fillRoundedRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, 8)
     this.bg.lineStyle(2, this.characterData.color, alpha).strokeRoundedRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, 8)
     this.bg.fillStyle(this.characterData.color, 0.12).fillRoundedRect(-SLOT_W / 2 + 6, -SLOT_H / 2 + 7, SLOT_W - 12, 34, 6)
   }
