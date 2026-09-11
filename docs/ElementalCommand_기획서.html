@@ -324,5 +324,15 @@ npm run build    # npx vite build</pre>
     <li><code>src/constants.js</code>의 <code>UI_FONT</code>가 <code>"Noto Sans KR", "Malgun Gothic", Arial, Helvetica, sans-serif</code> 순서로 바뀌어, OS 기본 산세리프 이전에 한글 글리프를 보장하는 폰트를 우선 적용한다.</li>
   </ul>
 </section>
+<section>
+  <h2>2026-09-11 v0.10.2 캐릭터·적 슬롯, HP 셸 나인슬라이스 전환</h2>
+  <ul>
+    <li><code>src/systems/UiSkin.js</code>의 <code>UI_SKIN_ASSETS</code>에 텍스트가 없는 나인슬라이스 3종을 추가했다: <code>ec-character-slot-frame-9s</code>(여백 14/12/14/12), <code>ec-enemy-slot-frame-9s</code>(여백 16/14/16/14), <code>ec-hp-shell-9s</code>(여백 6/3/6/3). <code>BootScene</code>이 이 배열을 그대로 순회해 로드하므로 별도 프리로드 코드 추가는 필요 없다.</li>
+    <li><code>src/objects/CharacterSlot.js</code>는 손으로 그린 <code>fillRoundedRect</code> 패널 대신 <code>ec-character-slot-frame-9s</code> 비트맵 나인슬라이스를 배경으로 사용하고, 캐릭터 색상 강조 테두리·타일은 그래픽 오버레이로 그 위에 유지한다. HP 바 배경도 <code>ec-hp-shell-9s</code> 나인슬라이스로 교체했다.</li>
+    <li><code>src/objects/EnemySlot.js</code>는 <code>ec-enemy-slot-frame-9s</code> 비트맵 나인슬라이스를 슬롯 배경으로 추가하고, HP 바 배경을 동일한 <code>ec-hp-shell-9s</code> 나인슬라이스로 교체했다.</li>
+    <li>두 슬롯 모두 초상화/바디 이미지는 정사각형 <code>setDisplaySize</code>를 유지해 비율이 깨지지 않으며, 동적으로 채워지는 HP 바 사각형·<code>setScale(ratio, 1)</code>, 공격 타이머, 오라, 활성 강조·상태 피드백, 약점 진행 표시는 변경하지 않았다.</li>
+    <li>프레임(배경) → 강조 그래픽/오라 → 초상화·바디 → 텍스트 → HP 셸/바 순으로 컨테이너에 추가해 같은 레이어 정보가 겹치지 않게 층을 분리했다.</li>
+  </ul>
+</section>
 </body>
 </html>
