@@ -1,0 +1,388 @@
+import Phaser from 'phaser'
+import HexBoard from '../objects/HexBoard.js'
+import CharacterSlot from '../objects/CharacterSlot.js'
+import EnemySlot from '../objects/EnemySlot.js'
+import { buildWeights } from '../systems/GemSpawner.js'
+import { checkSequence } from '../systems/SequenceChecker.js'
+import { buildCommandMatchupPreview, buildWeaknessCounterPulsePlan, getCharacterSkills, isElementGem, resolveBattleParty, scaleEnemyForStage } from '../systems/CombatBoard.js'
+import { buildBattleHudGroups } from '../systems/BattleHudLayout.js'
+import { playAudioCue, selectBattleResultCue } from '../systems/AudioCues.js'
+import { debriefCommands } from '../systems/CommandPreview.js'
+import { GAME_WIDTH, GAME_HEIGHT, GEM_LABEL, UI_FONT } from '../constants.js'
+import { ENEMIES } from '../data/enemies.js'
+import { STAGES } from '../data/stages.js'
+import { CHARACTERS } from '../data/characters.js'
+
+const PARTY_Y = 268
+const SEQ_HINT_Y = 328
+const SKILL_PANEL_Y = 356
+const COMMAND_PREVIEW_Y = 404
+const HUD_GROUP_LEFT_X = 166
+const HUD_GROUP_RIGHT_X = 370
+const DEPLOYABLE_FRAME_KEYS = ['ui-deploy-card', 'ui-deploy-card-selected']
+
+export default class BattleScene extends Phaser.Scene {
+  constructor() { super({ key: 'BattleScene' }) }
+
+  init(data) {
+    this.stageId = data.stageId || 1
+    this.party = resolveBattleParty(data.party, CHARACTERS)
+    this.battleEnded = false
+  }
+
+  create() {
+    const stage = STAGES.find(s => s.id === this.stageId)
+
+    this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'bg-battle')
+    this.add.text(GAME_WIDTH / 2, 34, stage.name, {
+      fontSize: '18px',
+      fontFamily: UI_FONT,
+      color: '#ffffff',
+      fontStyle: 'bold',
+      stroke: '#101729',
+      strokeThickness: 4
+    }).setOrigin(0.5)
+
+    this._setupEnemies(stage.enemies)
+    this._setupParty()
+
+    const weights = buildWeights(this.party)
+    this.board = new HexBoard(this, weights)
+    this.board.on('dragComplete', this._onDragComplete, this)
+    this.selectedSkillByCharacter = new Map()
+    this.commandHistory = []
+
+    this.activeIndex = 0
+    this.characterSlots[0].setActive(true)
+    this._setupSkillPanel()
+    this._updateSkillPanel()
+
+    this.resultPanel = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'ui-deploy-card-selected')
+      .setDisplaySize(450, 430).setDepth(19).setVisible(false)
+    this.resultText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 30, '', {
+      fontSize: '16px',
+      fontFamily: UI_FONT,
+      color: '#ffffff',
+      fontStyle: 'bold',
+      align: 'center', lineSpacing: 8, wordWrap: { width: 360 }
+    }).setOrigin(0.5).setDepth(20).setVisible(false)
+  }
+
+  update(_time, delta) {
+    if (this.battleEnded) return
+    for (const slot of this.enemySlots) {
+      const dmg = slot.update(delta)
+      if (dmg !== null) this._applyEnemyAttack(dmg)
+    }
+  }
+
+  _setupEnemies(enemyList) {
+    const count = enemyList.length
+    const startX = GAME_WIDTH / 2 - ((count - 1) * 126) / 2
+    this.enemySlots = enemyList.map((e, i) =>
+      new EnemySlot(this, startX + i * 126, 144, scaleEnemyForStage(ENEMIES[e.id], this.stageId))
+    )
+  }
+
+  _setupParty() {
+    const count = this.party.length
+    const startX = GAME_WIDTH / 2 - ((count - 1) * 106) / 2
+    this.characterSlots = this.party.map((charData, i) =>
+      new CharacterSlot(this, startX + i * 106, PARTY_Y, charData)
+    )
+
+    this.seqHint = this.add.text(GAME_WIDTH / 2, SEQ_HINT_Y, '', {
+      fontSize: '12px',
+      fontFamily: UI_FONT,
+      color: '#fff1a8',
+      backgroundColor: '#101729aa',
+      padding: { x: 10, y: 5 }
+    }).setOrigin(0.5)
+  }
+
+  _setupSkillPanel() {
+    this.skillCards = []
+    this.skillPanel = this.add.image(GAME_WIDTH / 2, SKILL_PANEL_Y, 'ui-skill-tray')
+      .setDepth(8)
+    this.hudGroupPanels = [
+      this.add.image(HUD_GROUP_LEFT_X, COMMAND_PREVIEW_Y, 'ui-deploy-card').setDisplaySize(188, 54).setAlpha(0.86).setDepth(8),
+      this.add.image(HUD_GROUP_RIGHT_X, COMMAND_PREVIEW_Y, 'ui-deploy-card-selected').setDisplaySize(268, 70).setAlpha(0.9).setDepth(8)
+    ]
+    this.hudGroupLabels = [
+      this.add.text(HUD_GROUP_LEFT_X - 82, COMMAND_PREVIEW_Y - 20, 'SKILL SELECTION', {
+        fontSize: '8px', fontFamily: UI_FONT, color: '#fff1a8', fontStyle: 'bold'
+      }).setDepth(10),
+      this.add.text(HUD_GROUP_RIGHT_X - 122, COMMAND_PREVIEW_Y - 20, 'COMMAND PREVIEW', {
+        fontSize: '8px', fontFamily: UI_FONT, color: '#d9f2ff', fontStyle: 'bold'
+      }).setDepth(10)
+    ]
+    this.hudGroupTexts = [
+      this.add.text(HUD_GROUP_LEFT_X - 82, COMMAND_PREVIEW_Y - 6, '', {
+        fontSize: '9px', fontFamily: UI_FONT, color: '#ffffff', lineSpacing: 2, wordWrap: { width: 158 }
+      }).setDepth(10),
+      this.add.text(HUD_GROUP_RIGHT_X - 122, COMMAND_PREVIEW_Y - 6, '', {
+        fontSize: '8px', fontFamily: UI_FONT, color: '#d9f2ff', lineSpacing: 1, wordWrap: { width: 236 }
+      }).setDepth(10)
+    ]
+  }
+
+  _updateSkillPanel() {
+    for (const entry of this.skillCards) {
+      entry.card.destroy()
+      entry.hitZone.destroy()
+      entry.name.destroy()
+      entry.gems.destroy()
+    }
+    this.skillCards = []
+
+    const active = this.characterSlots[this.activeIndex]
+    const skills = getCharacterSkills(active.characterData)
+    const selectedIndex = this.selectedSkillByCharacter.get(active.characterData.id) || 0
+    const selectedSkill = skills[selectedIndex] || skills[0]
+    this.seqHint.setText(`${active.characterData.name} - Selected: ${selectedSkill.name}`)
+
+    skills.forEach((skill, i) => {
+      const x = GAME_WIDTH / 2 - ((skills.length - 1) * 112) / 2 + i * 112
+      const selected = skill.id === selectedSkill.id
+      const card = this.add.image(x, SKILL_PANEL_Y, selected ? 'ui-skill-card-selected' : 'ui-skill-card')
+        .setDepth(9)
+      const hitZone = this.add.zone(x, SKILL_PANEL_Y, 104, 46)
+        .setDepth(11)
+        .setInteractive({ useHandCursor: true })
+      const name = this.add.text(x, SKILL_PANEL_Y - 8, skill.name, {
+        fontSize: '9px',
+        fontFamily: UI_FONT,
+        color: '#ffffff',
+        fontStyle: 'bold'
+      }).setOrigin(0.5).setDepth(10)
+      const gems = this.add.text(x, SKILL_PANEL_Y + 9, skill.requiredGems.map(type => GEM_LABEL[type]).join(' > '), {
+        fontSize: '10px',
+        fontFamily: UI_FONT,
+        color: '#fff1a8'
+      }).setOrigin(0.5).setDepth(10)
+
+      hitZone.on('pointerover', () => card.setTint(selected ? 0xd4ffe8 : 0xcfefff))
+      hitZone.on('pointerout', () => card.clearTint())
+      hitZone.on('pointerdown', () => {
+        playAudioCue(this, 'elementSelect')
+        this.selectedSkillByCharacter.set(active.characterData.id, i)
+        this._updateSkillPanel()
+      })
+      this.skillCards.push({ card, hitZone, name, gems })
+    })
+
+    this._updateCommandPreview('Preview')
+  }
+
+  _onDragComplete(path) {
+    if (this.battleEnded) return
+    const activeSlot = this.characterSlots[this.activeIndex]
+    const gemTypes = path.map(p => p.gemType).filter(isElementGem)
+
+    if (path.length === 0) {
+      this._advanceCharacter()
+      return
+    }
+
+    const skill = this._selectedSkillFor(activeSlot.characterData)
+    const skillFired = checkSequence(gemTypes, skill.requiredGems)
+    const previewBeforeResolution = skillFired ? buildCommandMatchupPreview(skill, this.enemySlots, activeSlot.characterData) : null
+    if (skillFired) this._fireSkill(activeSlot, skill)
+    else this._fireBasicAttack(activeSlot)
+
+    const counterImpact = previewBeforeResolution
+      ? previewBeforeResolution.countersAfter.reduce((sum, entry, index) => {
+        const before = previewBeforeResolution.countersBefore[index]?.current || 0
+        return sum + Math.max(0, entry.current - before)
+      }, 0)
+      : 0
+    this.commandHistory.push({
+      name: skillFired ? skill.name : '기본 공격',
+      attemptedCommand: skill.name,
+      requiredGems: [...skill.requiredGems],
+      commanderElement: activeSlot.characterData.element,
+      impact: skillFired && previewBeforeResolution?.willBreakWeakness ? 100 + counterImpact : counterImpact
+    })
+
+    const consumed = this.board.consumePath(path)
+    this._applyWeaknessProgress(consumed.map(cell => cell.gemType).filter(isElementGem), previewBeforeResolution)
+    this._advanceCharacter()
+    this._updateCommandPreview(skillFired ? 'Resolved skill' : 'Resolved basic', skill)
+  }
+
+  _updateCommandPreview(prefix = 'Preview', skill = null) {
+    if (!this.hudGroupTexts || !this.enemySlots?.length || !this.characterSlots?.length) return
+    const activeSlot = this.characterSlots[this.activeIndex]
+    const selectedSkill = skill || this._selectedSkillFor(activeSlot.characterData)
+    const preview = buildCommandMatchupPreview(selectedSkill, this.enemySlots, activeSlot.characterData)
+    const counterLine = formatCounterDelta(preview.countersBefore, preview.countersAfter)
+    const groups = buildBattleHudGroups({
+      characterName: activeSlot.characterData.name,
+      selectedSkillName: selectedSkill.name,
+      preview: { ...preview, counterLine }
+    })
+    groups.forEach((group, index) => {
+      if (!this.hudGroupLabels?.[index] || !this.hudGroupTexts?.[index]) return
+      this.hudGroupLabels[index].setText(group.label)
+      this.hudGroupTexts[index]
+        .setColor(group.emphasis === 'break' ? '#fff1a8' : (group.role === 'primary-action' ? '#ffffff' : '#d9f2ff'))
+        .setText(group.lines.join('\n'))
+    })
+  }
+
+  _selectedSkillFor(characterData) {
+    const skills = getCharacterSkills(characterData)
+    const index = this.selectedSkillByCharacter.get(characterData.id) || 0
+    return skills[index] || skills[0]
+  }
+
+  _fireSkill(charSlot, skill) {
+    playAudioCue(this, 'skillAttack')
+    const dmg = Math.floor(charSlot.characterData.attack * skill.multiplier)
+    this._dealDamageToEnemies(dmg)
+    this.cameras.main.flash(250, 255, 238, 150)
+    this.cameras.main.shake(120, 0.004)
+    this._showSkillCutIn(charSlot, skill)
+  }
+
+  _fireBasicAttack(charSlot) {
+    playAudioCue(this, 'basicAttack')
+    this._dealDamageToEnemies(charSlot.characterData.attack)
+  }
+
+  _dealDamageToEnemies(totalDmg) {
+    const alive = this.enemySlots.filter(s => s.alive)
+    if (alive.length === 0) return
+    const perEnemy = Math.floor(totalDmg / alive.length)
+    for (const slot of alive) slot.takeDamage(perEnemy)
+    this._checkVictory()
+  }
+
+  _applyEnemyAttack(dmg) {
+    const alive = this.characterSlots.filter(s => !s.isDead())
+    if (alive.length === 0) return
+    const target = alive[Math.floor(Math.random() * alive.length)]
+    target.takeDamage(dmg)
+    playAudioCue(this, 'enemyHit')
+    this.board.addObstacle()
+    this._checkDefeat()
+  }
+
+  _applyWeaknessProgress(destroyedTypes, previewBeforeResolution = null) {
+    if (destroyedTypes.length === 0) return
+    for (const slot of this.enemySlots) {
+      const completed = slot.applyWeakness(destroyedTypes)
+      const pulsePlan = buildWeaknessCounterPulsePlan(previewBeforeResolution, slot, completed)
+      if (pulsePlan) {
+        playAudioCue(this, 'weaknessBreak')
+        slot.playWeaknessCounterPulse(pulsePlan.gemTypes)
+      }
+    }
+    this._checkVictory()
+  }
+
+  _showSkillCutIn(charSlot, skill) {
+    const portrait = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, `portrait-${charSlot.characterData.id}`)
+      .setDisplaySize(250, 250)
+      .setAlpha(0)
+      .setDepth(18)
+    const name = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 112, skill.name, {
+      fontSize: '22px',
+      fontFamily: UI_FONT,
+      color: '#ffffff',
+      fontStyle: 'bold',
+      stroke: '#101729',
+      strokeThickness: 5
+    }).setOrigin(0.5).setAlpha(0).setDepth(19)
+
+    this.tweens.add({
+      targets: [portrait, name],
+      alpha: { from: 0, to: 0.88 },
+      scale: { from: 0.82, to: 1.08 },
+      duration: 180,
+      yoyo: true,
+      hold: 260,
+      onComplete: () => {
+        portrait.destroy()
+        name.destroy()
+      }
+    })
+  }
+
+  _advanceCharacter() {
+    if (this.battleEnded) return
+    this.characterSlots[this.activeIndex].setActive(false)
+    let attempts = 0
+    do {
+      this.activeIndex = (this.activeIndex + 1) % this.characterSlots.length
+      attempts++
+    } while (this.characterSlots[this.activeIndex].isDead() && attempts < this.characterSlots.length)
+
+    this.characterSlots[this.activeIndex].setActive(true)
+    this._updateSkillPanel()
+  }
+
+  _checkVictory() {
+    if (this.battleEnded) return
+    if (this.enemySlots.every(s => !s.alive)) {
+      this.battleEnded = true
+      playAudioCue(this, selectBattleResultCue('victory'))
+      this._showBattleDebrief('승리')
+    }
+  }
+
+  _checkDefeat() {
+    if (this.battleEnded) return
+    if (this.characterSlots.every(s => s.isDead())) {
+      this.battleEnded = true
+      playAudioCue(this, selectBattleResultCue('defeat'))
+      this._showBattleDebrief('패배')
+    }
+  }
+
+  _showBattleDebrief(outcome) {
+    const debrief = debriefCommands(this.commandHistory)
+    const wasted = debrief.wasted.length > 0 ? `${debrief.wasted.join(', ')} ${debrief.wasted.length}회` : '없음'
+    this.resultPanel.setVisible(true)
+    this.resultText.setText([
+      outcome,
+      `최고 효율 명령 · ${debrief.best}`,
+      `낭비된 명령 · ${wasted}`,
+      `다음 명령 · ${debrief.nextCommand}`,
+      `덱 조정 · ${debrief.deckAdvice}`
+    ].join('\n')).setVisible(true)
+    this._showResultActions(debrief)
+  }
+
+  _showResultActions(debrief) {
+    if (this.resultActions?.length) return
+    const actions = [
+      { x: 112, label: 'Retry', run: () => this.scene.start('BattleScene', { stageId: this.stageId, party: this.party }) },
+      { x: 240, label: 'Edit Party', run: () => this.scene.start('PartySelectScene', { stageId: this.stageId, recommendation: debrief.deckAdvice }) },
+      { x: 368, label: 'Stages', run: () => this.scene.start('StageSelectScene') },
+    ]
+    this.resultActions = actions.map(action => {
+      const button = this.add.image(action.x, 590, 'ui-button-ready')
+        .setDisplaySize(116, 44).setDepth(21)
+      const label = this.add.text(action.x, 590, action.label, {
+        fontSize: '13px', fontFamily: UI_FONT, color: '#d6ffe8', fontStyle: 'bold'
+      }).setOrigin(0.5).setDepth(22)
+      const hitZone = this.add.zone(action.x, 590, 116, 44)
+        .setDepth(23).setInteractive({ useHandCursor: true })
+      hitZone.on('pointerover', () => button.setTint(0xcaffdf))
+      hitZone.on('pointerout', () => button.clearTint())
+      hitZone.on('pointerdown', action.run)
+      return { button, label, hitZone }
+    })
+  }
+}
+
+function formatCounterDelta(before, after) {
+  if (!before.length || !after.length) return 'Counters: no matching weakness gems visible.'
+  const parts = after.map((entry, i) => {
+    const previous = before[i] || entry
+    return `${GEM_LABEL[entry.type]} ${previous.current}/${entry.required} > ${entry.current}/${entry.required}`
+  })
+  return `Counters: ${parts.join(' | ')}`
+}
+

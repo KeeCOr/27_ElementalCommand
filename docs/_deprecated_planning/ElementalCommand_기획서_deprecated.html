@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ElementalCommand 기획서</title>
+  <style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65;max-width:1040px;margin:0 auto;padding:40px 24px;color:#20242a;background:#fafafa}h1{font-size:34px;margin:0 0 20px}h2{font-size:24px;margin-top:34px;border-bottom:1px solid #ddd;padding-bottom:6px}h3{font-size:18px;margin-top:24px;color:#32435f}p,li,td,th{font-size:15px}li{margin:5px 0}code{background:#fff;border:1px solid #ddd;border-radius:4px;padding:1px 4px}pre{white-space:pre-wrap;background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px 12px;overflow:auto}pre code{border:0;padding:0;background:transparent}table{border-collapse:collapse;width:100%;background:#fff;margin:12px 0}td,th{border:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}figure{margin:18px 0;background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px}img{max-width:100%;height:auto;display:block;border-radius:6px}figcaption{font-size:13px;color:#626b76;margin-top:8px}</style>
+</head>
+<body>
+<h1>ElementalCommand 기획서</h1>
+<p>문제 정의: 전략 플레이어가 속성 상성을 외우는 데 그치지 않고 매 턴 전장 명령으로 활용하고 싶어 한다.</p>
+<h2>게임 소개</h2>
+<p>원소 상성과 지휘 판단을 중심으로 한 전술 게임.</p>
+<p>ElementalCommand의 핵심 매력은 한 번의 선택이 다음 장면의 위험도, 보상, 성장 방향으로 이어지는 구조다. 이 문서는 처음 보는 사람에게 게임의 재미와 현재 방향을 빠르게 소개하기 위한 단일 기획서이며, 세부 변경 이력은 별도 업데이트 내역서에서 관리한다.</p>
+<h2>한 줄 소개</h2>
+<p>원소 상성과 지휘 판단을 중심으로 한 전술 게임.</p>
+<h2>핵심 루프</h2>
+<p>유저가 현재 전장의 정보를 읽고 선택을 하면 전투/운영 결과가 갱신되고, 그 보상과 손실 때문에 다시 다음 선택을 준비한다.</p>
+<h2>게임 플레이 예시</h2>
+<ul>
+<li>1단계: 플레이어가 ElementalCommand의 현재 목표, 보유 자원, 즉시 대응해야 할 위험을 확인한다.</li>
+<li>2단계: 카드, 유닛, 배치, 명령, 이동 중 현재 상황에 맞는 핵심 행동을 선택한다.</li>
+<li>3단계: 선택 결과가 전투, 운영, 보상, 손실로 즉시 갱신되고 다음 판단의 근거가 된다.</li>
+<li>4단계: 획득한 보상이나 변화한 상태를 바탕으로 다음 선택을 준비하며 핵심 루프를 반복한다.</li>
+<li>플레이 감각: 짧은 세션 안에서 상황 파악, 의미 있는 선택, 즉각적인 피드백, 다음 목표 제시가 끊기지 않는 흐름을 지향한다.</li>
+</ul>
+<h2>핵심 재미</h2>
+<ul>
+<li>읽기 쉬운 상황 판단: 지금 위험한 요소와 얻을 수 있는 보상이 한눈에 들어온다.</li>
+<li>직접적인 선택 피드백: 선택 직후 전투, 점수, 자원, 성장 상태가 변해 손맛을 만든다.</li>
+<li>누적되는 성장감: 반복 플레이가 단순 재시작이 아니라 다음 전략의 재료로 이어진다.</li>
+</ul>
+<h2>주요 시스템</h2>
+<ul>
+<li>핵심 선택 시스템: 현재 국면에서 가능한 행동을 5개 이하의 명확한 선택지로 제시한다.</li>
+<li>위험/보상 피드백: 행동 전후의 이득, 손실, 위협 변화를 빠르게 보여준다.</li>
+<li>성장과 해금: 세션 결과가 능력, 카드, 유닛, 건물, 장비, 스테이지 등 다음 플레이의 선택지를 넓힌다.</li>
+<li>상태별 UX: 로딩, 빈 상태, 오류, 많은 데이터, 긴 텍스트 상황에서도 레이아웃이 무너지지 않도록 관리한다.</li>
+<li>실행 안정성: 테스트와 빌드 산출물을 기준으로 현재 플레이 가능한 범위를 계속 확인한다.</li>
+</ul>
+<h2>게임 구성과 규칙 (GDD 통합)</h2>
+<ul>
+<li>통합 기준 문서: <code>superpowers/specs/2026-05-14-elemental-command-design.md</code>, <code>superpowers/specs/2026-05-15-elemental-command-art-upgrade-design.md</code>, <code>superpowers/specs/2026-05-15-elemental-command-combat-board-design.md</code></li>
+<li>작성 기준: 16_PokerStrike_GDD처럼 화면 구조, 핵심 시스템, 진행/승패 규칙, UI/HUD, 미결 항목을 한 문서에서 바로 읽을 수 있게 정리한다.</li>
+</ul>
+<h3>화면/플레이 구조</h3>
+<ul>
+<li><strong>1. 개요</strong> (superpowers/specs/2026-05-14-elemental-command-design.md)</li>
+</ul>
+<p>  - 젬을 드래그하여 캐릭터 스킬 시퀀스를 완성하면 아군이 적을 공격하는 퍼즐 배틀 게임.</p>
+<p>  - 적은 실시간으로 공격해오며, 플레이어는 빠르게 시퀀스를 완성해 아군을 순환시키며 싸운다.</p>
+<ul>
+<li><strong>3. 프로젝트 구조</strong> (superpowers/specs/2026-05-14-elemental-command-design.md)</li>
+</ul>
+<p>  - │ ├── BootScene.js # 에셋 로딩</p>
+<p>  - │ ├── StageSelectScene.js # 스테이지 선택</p>
+<p>  - │ ├── PartySelectScene.js # 파티 편성 (4인)</p>
+<p>  - │ └── BattleScene.js # 핵심 전투 씬</p>
+<p>  - │ ├── HexBoard.js # 헥사 퍼즐 보드 (5x6)</p>
+<p>  - │ ├── Gem.js # 젬 오브젝트</p>
+<p>  - │ ├── Character.js # 아군 캐릭터</p>
+<ul>
+<li><strong>4.1 퍼즐 보드</strong> (superpowers/specs/2026-05-14-elemental-command-design.md)</li>
+</ul>
+<p>  - <strong>형태:</strong> 헥사고날 그리드 5열 x 6행 (검증 후 수정 가능)</p>
+<p>  - <strong>젬 종류:</strong> 5가지 — 불(Fire), 물(Water), 풀(Grass), 빛(Light), 어둠(Dark)</p>
+<p>  - <strong>젬 스폰 확률:</strong> 기본 각 20%, 파티 구성에 따라 보정</p>
+<p>  - 해당 속성 캐릭터 1명당 +5~10% 보정, 초과분은 나머지 속성에서 균등 차감</p>
+<h3>핵심 시스템</h3>
+<ul>
+<li><strong>4.4 캐릭터 순환</strong> (superpowers/specs/2026-05-14-elemental-command-design.md)</li>
+</ul>
+<p>  - 아군 4명이 A→B→C→D→A 순서로 순환</p>
+<p>  - 드래그 종료마다 다음 캐릭터로 교체 (스킬 발동 여부 무관)</p>
+<p>  - 현재 활성 캐릭터는 시각적으로 강조 (앞으로 나오거나 빛남)</p>
+<ul>
+<li><strong>Visual Direction</strong> (superpowers/specs/2026-05-15-elemental-command-art-upgrade-design.md)</li>
+</ul>
+<p>  - Use a colorful mobile fantasy RPG style:</p>
+<p>  - A dark magical battlefield background with readable contrast.</p>
+<p>  - Element gems that look like polished fantasy stones instead of flat colored hexes.</p>
+<p>  - Character cards with portrait art, element frames, and clearer skill identity.</p>
+<p>  - Enemy slots with monster portraits or silhouettes, stronger HP bars, and attack gauges.</p>
+<p>  - Short elemental impact effects when skills fire.</p>
+<p>  - The style should feel polished but still lightweight enough for the current MVP.</p>
+<ul>
+<li><strong>Assets To Add</strong> (superpowers/specs/2026-05-15-elemental-command-art-upgrade-design.md)</li>
+</ul>
+<p>  - Create or add the following under <code>public/assets/</code>:</p>
+<p>  - <code>battle-bg-ruins.png</code>: vertical fantasy battlefield background.</p>
+<p>  - <code>gem-fire.png</code>, <code>gem-water.png</code>, <code>gem-grass.png</code>, <code>gem-light.png</code>, <code>gem-dark.png</code>: transparent elemental hex gems.</p>
+<p>  - <code>portrait-warrior.png</code>, <code>portrait-mage.png</code>, <code>portrait-ranger.png</code>, <code>portrait-paladin.png</code>, <code>portrait-assassin.png</code>: character portraits.</p>
+<p>  - <code>enemy-goblin.png</code>, <code>enemy-orc.png</code>, <code>enemy-darkKnight.png</code>, <code>enemy-fireSpirit.png</code>, <code>enemy-shadowBeast.png</code>: enemy portraits matching <code>src/data/enemies.js</code>.</p>
+<p>  - <code>panel-card.png</code> or equivalent frame texture for cards and slots if it improves the screen without complicating layout.</p>
+<p>  - All gameplay-critical objects still need fallback drawing when an image is missing, so the game remains runnable during asset iteration.</p>
+<ul>
+<li><strong>PartySelectScene</strong> (superpowers/specs/2026-05-15-elemental-command-art-upgrade-design.md)</li>
+</ul>
+<p>  - Replace flat character cards with richer cards:</p>
+<p>  - Portrait near the top or left side.</p>
+<p>  - Element-colored border.</p>
+<p>  - Skill sequence shown with small gem icons.</p>
+<p>  - Attack and HP text kept compact and readable.</p>
+<p>  - Selection should still support up to four characters and must preserve current behavior.</p>
+<h3>진행/승패 규칙</h3>
+<ul>
+<li><strong>4.5 적 실시간 공격</strong> (superpowers/specs/2026-05-14-elemental-command-design.md)</li>
+</ul>
+<p>  - 각 적은 개별 공격 타이머 보유</p>
+<p>  - 타이머가 차면 즉시 아군에게 공격 (별도 적 턴 없음)</p>
+<p>  - 적 공격 게이지를 UI에 실시간 표시</p>
+<ul>
+<li><strong>스테이지</strong> (superpowers/specs/2026-05-14-elemental-command-design.md)</li>
+</ul>
+<p>  - name: '첫 번째 시련',</p>
+<p>  - { id: 'goblin', count: 3 }</p>
+<h3>UI/HUD/피드백</h3>
+<ul>
+<li><strong>Non-Goals</strong> (superpowers/specs/2026-05-15-elemental-command-art-upgrade-design.md)</li>
+</ul>
+<p>  - No new gameplay systems.</p>
+<p>  - No sprite-sheet animation pipeline.</p>
+<p>  - No inventory, character growth, shop, or story UI.</p>
+<p>  - No mobile packaging changes in this pass.</p>
+<h3>구현 메모/미결</h3>
+<ul>
+<li><strong>2. 기술 스택</strong> (superpowers/specs/2026-05-14-elemental-command-design.md)</li>
+</ul>
+<table>
+<tr><th>항목</th><th>선택</th></tr>
+<tr><td>게임 엔진</td><td>Phaser.js 3</td></tr>
+<tr><td>언어</td><td>JavaScript (ES Modules)</td></tr>
+<tr><td>빌드</td><td>Vite</td></tr>
+<tr><td>모바일 확장</td><td>Capacitor</td></tr>
+<tr><td>Steam 확장</td><td>Electron</td></tr>
+</table>
+<h2>MVP 가설</h2>
+<table>
+<tr><th>기능</th><th>검증할 가설</th><th>검증 방법</th></tr>
+<tr><td>핵심 전투/운영 루프</td><td>플레이어는 한 판 안에서 선택 결과를 이해하면 다음 판을 자발적으로 시작한다.</td><td>1회 플레이 후 재시작률 60% 이상</td></tr>
+<tr><td>위험/보상 표시</td><td>위험과 보상이 동시에 보이면 선택 시간이 줄고 납득도가 오른다.</td><td>주요 선택 평균 8초 이내, 결과 불만 피드백 20% 이하</td></tr>
+<tr><td>성장 보상</td><td>보상이 다음 전략을 바꾸면 반복 플레이 피로가 낮아진다.</td><td>3판 내 서로 다른 빌드 선택률 50% 이상</td></tr>
+</table>
+<h2>레퍼런스 분석</h2>
+<ul>
+<li>장르 기준 레퍼런스는 한 판 시작까지 3단계 이내, 첫 의미 있는 선택까지 30초 이내가 목표다.</li>
+<li>적용 교훈: 규칙 설명보다 먼저 선택 가능한 상황을 보여주고, 결과 화면에서 다음 판의 개선 포인트를 바로 제안한다.</li>
+</ul>
+<h2>현재 개발 상태 예상 수치</h2>
+<ul>
+<li>완성 목표 대비 구현 체감도: 약 50%</li>
+<li>첫 세션에서 핵심 루프가 전달될 가능성: 약 56%</li>
+<li>UI/리소스 일관성 체감: 약 46%</li>
+<li>콘텐츠와 반복 플레이 분량 충족도: 약 46%</li>
+<li>빌드/실행 안정성 기대치: 약 40%</li>
+<li>해석 기준: 현재 문서, 최근 산출물 기록, 연결된 예시 이미지 유무를 기준으로 한 사전 추정치이며 실제 플레이 테스트 후 ±15%p 정도 보정이 필요하다.</li>
+</ul>
+<ul>
+<li>첫 세션 평균 플레이 시간 8분 이상</li>
+<li>첫 세션 내 2회차 진입률 55% 이상</li>
+<li>핵심 선택 화면에서 무응답/이탈률 15% 이하</li>
+</ul>
+<h2>현재 구현 상태</h2>
+<ul>
+<li>이 문서는 2026-06-24 기준으로 현재 플레이 방향과 구현 체감 상태를 요약한다.</li>
+<li>핵심 루프, 조작 원칙, 리소스 적용 현황, 빌드 기준은 프로젝트별 실제 구현과 산출물 기록을 기준으로 계속 보정한다.</li>
+<li>세부 변경 이력은 별도 업데이트 내역서에서 관리하고, 본 기획서는 처음 보는 사람이 현재 방향을 빠르게 이해하는 공유 문서로 유지한다.</li>
+<li>새 기능, 밸런스 변경, 리소스 교체, UX 개선이 들어가면 본문과 HTML 문서를 함께 갱신한다.</li>
+</ul>
+<h2>조작과 UX 원칙</h2>
+<ul>
+<li>주요 버튼은 44px 이상으로 유지하고, 화면당 CTA 강조색은 하나만 사용한다.</li>
+<li>버튼/선택지는 한 번에 5개 이하로 노출해 판단 부담을 줄인다.</li>
+<li>로딩, 빈 상태, 에러, 많은 데이터, 긴 텍스트 상태를 각각 별도 화면/컴포넌트로 확인한다.</li>
+<li>HUD 동일 레이어 요소는 겹치지 않게 배치하고, 겹침이 필요한 효과는 별도 depth/z-order를 쓴다.</li>
+</ul>
+<h2>적용 리소스</h2>
+<ul>
+<li>런타임에 쓰이는 대표 이미지와 UI 리소스는 프로젝트별 asset/public/Resources 경로를 기준으로 관리한다.</li>
+<li>새 이미지가 필요할 때는 프로젝트 접두어를 포함한 lowercase kebab-case 파일명을 사용한다.</li>
+<li>최종 런타임 비주얼은 PNG/WebP 등 비트맵 자산을 우선 사용하고, SVG 또는 코드 드로잉은 문서/임시 참조로만 남긴다.</li>
+</ul>
+<h2>공유용 이미지 미리보기</h2>
+<figure><img src="ElementalCommand_01_플레이예시.png" alt="ElementalCommand 공유용 예시 1"><figcaption>ElementalCommand 공유용 예시 1</figcaption></figure>
+<figure><img src="ElementalCommand_레퍼런스_플레이예시_구버전.png" alt="ElementalCommand 공유용 예시 2"><figcaption>ElementalCommand 공유용 예시 2</figcaption></figure>
+<figure><img src="enemy-portraits-transparent-preview.png" alt="ElementalCommand 공유용 예시 3"><figcaption>ElementalCommand 공유용 예시 3</figcaption></figure>
+<ul>
+<li>assets/bg-menu.png</li>
+<li>assets/bg-menu.tmp.png</li>
+<li>assets/character-portraits-sheet.png</li>
+</ul>
+<h2>빌드, 테스트, 릴리스</h2>
+<ul>
+<li>npm test</li>
+<li>npm run build</li>
+<li>현재 문서 기준 버전: 0.2.0</li>
+</ul>
+<h2>남은 리스크와 다음 우선순위</h2>
+<ul>
+<li>첫 화면에서 게임의 목표와 다음 행동이 5초 안에 보이는지 확인한다.</li>
+<li>주요 선택의 결과 예측과 실제 결과가 어긋나는 지점을 플레이 테스트로 수집한다.</li>
+<li>기획서에 남아 있던 변경 이력성 내용은 업데이트 내역서로 계속 이동해 소개 문서의 밀도를 유지한다.</li>
+</ul>
+</body>
+</html>
