@@ -1,0 +1,9 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ElementalCommand 기획서 v0.7.2</title><style>body{max-width:940px;margin:auto;padding:28px;background:#f3f5fa;color:#18213b;font:15px/1.65 "Malgun Gothic",sans-serif}h1{border-bottom:4px solid #4c78a8;padding-bottom:10px}h2{margin-top:28px;color:#19335c}table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #bcc7d8;padding:8px;text-align:left}th{background:#17213b;color:#fff}.note{padding:14px;background:#fff8df;border:1px solid #d6c88c}</style></head><body>
+<h1>ElementalCommand 기획서 v0.7.2</h1><p>최종 업데이트 2026-09-23 · 브라우저 / Windows 로컬 런처 보조</p>
+<h2>제품 정의</h2><p>5속성 지휘관을 편성하고 헥스 보석 경로로 명령을 완성해 적 약점을 파괴하는 세로형 전술 퍼즐 RPG다.</p>
+<h2>핵심 루프</h2><p>스테이지 → 편성 → 보석 경로 → 명령·약점 결과 → 승패 회고 → 다음 명령·덱 수정 → 재도전.</p>
+<h2>결과→덱/명령 개선</h2><p>결과 화면은 최고 효율·낭비 명령, 다음 재현 명령, 보강 지휘관 속성을 표시한다. 자동 전환을 제거하고 Retry, Edit Party, Stages 중 다음 행동을 직접 고르게 했다. Edit Party는 보강 조언을 편성 화면까지 전달한다.</p>
+<h2>구현 구조</h2><table><tr><th>영역</th><th>설계</th></tr><tr><td>데이터</td><td>명령명, 요구 보석, 지휘관 속성, 약점 기여도</td></tr><tr><td>계산</td><td>debriefCommands가 다음 명령과 보강 속성 산출</td></tr><tr><td>결과</td><td>회고 5줄과 명시적 다음 행동 3개</td></tr><tr><td>편성</td><td>이전 전투 보강 조언 표시</td></tr></table>
+<h2>검증</h2><p class="note">집중 18개, 전체 82개 테스트와 build 통과. Impeccable detect 0건. 약 1.53MB 청크 경고. 실제 전투 완주·480×854·저장 복귀는 미검증.</p>
+<h2>계보와 다음 개선</h2><p>복원 소스 v0.7.2, 루트 실행파일 v0.6.0, Drive 실행파일 v0.10.2다. 대응 소스 없는 실행파일로 덮어쓰지 않는다. 다음 단계는 적 약점 분포와 파티 생존 결과를 덱 보강 근거에 포함하는 것이다.</p>
+</body></html>

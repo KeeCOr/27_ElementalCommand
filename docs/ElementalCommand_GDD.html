@@ -1,0 +1,10 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ElementalCommand GDD v2.0</title><style>body{max-width:980px;margin:auto;padding:28px;background:#f3f5fa;color:#18213b;font:15px/1.65 "Malgun Gothic",sans-serif}h1{border-bottom:4px solid #4c78a8;padding-bottom:10px}h2{margin-top:30px;color:#19335c}table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #bcc7d8;padding:8px;text-align:left;vertical-align:top}th{background:#17213b;color:#fff}.meta,.note{padding:14px}.meta{background:#17213b;color:#fff}.note{background:#fff8df;border:1px solid #d6c88c}code{background:#e4e9f2;padding:1px 4px}</style></head><body>
+<h1>ElementalCommand GDD</h1><div class="meta">문서 2.0 · 프로젝트 0.7.2 · 2026-09-23 동기화</div>
+<h2>제품 정의</h2><p>5속성 지휘관을 최대 4명 편성하고 5×6 헥스 보드에서 보석 경로를 연결해 기본 공격·스킬·약점 파괴를 실행하는 세로형 전술 퍼즐 RPG다.</p>
+<h2>핵심 루프</h2><p>스테이지 선택 → 편성 → 보석 공급 → 명령 선택 → 약점 대응 → 승패 회고 → 다음 명령·덱 수정 → 재도전.</p>
+<h2>전투 규칙</h2><table><tr><th>항목</th><th>현재 규칙</th></tr><tr><td>보드</td><td>5열×6행 헥스</td></tr><tr><td>속성</td><td>불·물·자연·빛·어둠</td></tr><tr><td>편성</td><td>지휘관 최대 4명, 편성 속성에 따라 보석 출현 가중치 증가</td></tr><tr><td>명령</td><td>요구 보석 순서를 완성하면 스킬, 실패하면 기본 공격</td></tr><tr><td>약점</td><td>카운터 완성 시 약점 파괴와 적 공격 타이머 초기화</td></tr></table>
+<h2>결과→다음 덱/명령</h2><p>전투 기록은 명령명·요구 보석·지휘관 속성·약점 기여도를 저장한다. 결과 화면은 최고 효율, 낭비 명령, 다음에 재현할 명령, 보강할 속성을 보여주고 자동으로 사라지지 않는다.</p><table><tr><th>행동</th><th>결과</th></tr><tr><td>Retry</td><td>현재 파티와 스테이지로 재도전</td></tr><tr><td>Edit Party</td><td>보강 속성 조언을 편성 화면으로 전달</td></tr><tr><td>Stages</td><td>스테이지 선택으로 복귀</td></tr></table>
+<h2>UI 원칙</h2><p>기존 네이비 패널, 청록·금색 강조, 포트레이트·보석·버튼 이미지를 유지한다. 명령과 조언은 실제 텍스트로 표시하며 새 이미지 없이 기존 결과 패널과 버튼 자산을 재사용한다.</p>
+<h2>검증</h2><p class="note">집중 3개 파일·18개, 전체 14개 파일·82개 테스트와 <code>npm run build</code> 통과. Impeccable detect 0건. 약 1.53MB 청크 경고. 실제 승패 완주와 480×854 줄바꿈·버튼 입력은 미검증.</p>
+<h2>소스 계보</h2><ul><li>복원 소스 v0.7.2</li><li>루트 실행파일 v0.6.0</li><li>Drive 실행파일 v0.10.2</li></ul><p>Drive 실행파일 대응 소스는 확인되지 않았다. 실행파일 버전만으로 현재 소스를 덮어쓰지 않는다. 의존성 강제 업그레이드·보안 감사·포터블 패키징·Drive 배포는 실행하지 않았다.</p>
+</body></html>
