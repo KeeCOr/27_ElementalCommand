@@ -6,6 +6,7 @@ import { preloadAudioCues } from '../systems/AudioCues.js'
 export default class BootScene extends Phaser.Scene {
   constructor() { super({ key: 'BootScene' }) }
   preload() {
+    this.load.image('title-logo', 'assets/brand/title-logo.png')
     Object.values(ART_SOURCE_IMAGES).forEach(source => {
       this.load.image(source.key, source.path)
     })

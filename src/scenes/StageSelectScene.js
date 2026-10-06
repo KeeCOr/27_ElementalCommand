@@ -9,25 +9,24 @@ export default class StageSelectScene extends Phaser.Scene {
   create() {
     this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'bg-menu')
 
-    this.add.text(GAME_WIDTH / 2, 78, 'Elemental Command', {
-      fontSize: '30px',
-      fontFamily: UI_FONT,
-      color: '#ffffff',
-      fontStyle: 'bold',
-      stroke: '#101729',
-      strokeThickness: 5
-    }).setOrigin(0.5)
+    const titleLogo = this.add.image(GAME_WIDTH / 2, 72, 'title-logo')
+      .setDisplaySize(286, 114)
+    titleLogo.once('error', () => {
+      this.add.text(GAME_WIDTH / 2, 78, 'Elemental Commander', {
+        fontSize: '30px', fontFamily: UI_FONT, color: '#ffffff', fontStyle: 'bold', stroke: '#101729', strokeThickness: 5
+      }).setOrigin(0.5)
+    })
 
-    this.add.text(GAME_WIDTH / 2, 122, 'Choose a campaign node', {
+    this.add.text(GAME_WIDTH / 2, 132, 'Choose a campaign node', {
       fontSize: '14px',
       fontFamily: UI_FONT,
       color: '#b7c7ff'
     }).setOrigin(0.5)
 
-    this.add.image(GAME_WIDTH / 2, 164, 'ui-button-ready')
+    this.add.image(GAME_WIDTH / 2, 174, 'ui-button-ready')
       .setDisplaySize(190, 42)
       .setAlpha(0.72)
-    this.add.text(GAME_WIDTH / 2, 164, `${STAGES.length} Stages Available`, {
+    this.add.text(GAME_WIDTH / 2, 174, `${STAGES.length} Stages Available`, {
       fontSize: '14px',
       fontFamily: UI_FONT,
       color: '#d6ffe8',
@@ -35,7 +34,7 @@ export default class StageSelectScene extends Phaser.Scene {
     }).setOrigin(0.5)
 
     STAGES.forEach((stage, i) => {
-      const y = 226 + i * 88
+      const y = 236 + i * 88
       const card = this.add.image(GAME_WIDTH / 2, y, 'ui-stage-card')
       const hitZone = this.add.zone(GAME_WIDTH / 2, y, 300, 76)
         .setInteractive({ useHandCursor: true })

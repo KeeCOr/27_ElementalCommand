@@ -14,6 +14,7 @@ All images are saved under `public/assets/`.
 | `enemy-portraits-sheet.png` | Monster portraits | Five portraits in order: Moss Imp, Iron Brute, Grave Warden, Cinder Wisp, Night Maw. Updated 2026-06-08 with transparent portrait-edge masking so the square monster background is removed in-game. |
 | `gem-items-sheet.png` | Puzzle gem and board item art | Fire, water, nature, light, dark, bomb, row-clear, obstacle. |
 | `deployables-sheet.png` | Building and deployable hero icons | Barracks, Arrow Tower, Mana Well, Field Captain, Crystal Seer, Stone Sentinel. |
+| `brand/title-logo.png` | Stage-select title logo | Transparent `ELEMENTAL COMMANDER` wordmark, loaded by `BootScene` and shown in `StageSelectScene`. |
 
 ## Integration Notes
 
