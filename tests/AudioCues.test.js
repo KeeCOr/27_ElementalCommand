@@ -7,7 +7,7 @@ import {
 } from '../src/systems/AudioCues.js'
 
 describe('AudioCues', () => {
-  it('maps battle feedback events to Kenney ogg assets', () => {
+  it('maps battle feedback events to original runtime audio assets', () => {
     expect(Object.keys(AUDIO_CUES)).toEqual([
       'elementSelect',
       'commandConfirm',
@@ -18,10 +18,10 @@ describe('AudioCues', () => {
       'victory',
       'defeat'
     ])
-    expect(AUDIO_CUES.elementSelect.path).toBe('assets/audio/kenney-interface-select-001.ogg')
-    expect(AUDIO_CUES.commandConfirm.path).toBe('assets/audio/kenney-digital-powerup-01.ogg')
-    expect(AUDIO_CUES.weaknessBreak.path).toBe('assets/audio/kenney-impact-bell-heavy-000.ogg')
-    expect(AUDIO_CUES.victory.path).toBe('assets/audio/kenney-jingle-pizzi-00.ogg')
+    expect(AUDIO_CUES.elementSelect.path).toBe('assets/audio/ec-element-select-v1.wav')
+    expect(AUDIO_CUES.commandConfirm.path).toBe('assets/audio/ec-command-confirm-v1.wav')
+    expect(AUDIO_CUES.weaknessBreak.path).toBe('assets/audio/ec-weakness-break-v1.wav')
+    expect(AUDIO_CUES.victory.path).toBe('assets/audio/ec-victory-v1.wav')
   })
 
   it('preloads every cue with the runtime key and asset path', () => {
@@ -34,8 +34,8 @@ describe('AudioCues', () => {
     preloadAudioCues(scene)
 
     expect(scene.load.audio).toHaveBeenCalledTimes(Object.keys(AUDIO_CUES).length)
-    expect(scene.load.audio).toHaveBeenCalledWith('audio-element-select', 'assets/audio/kenney-interface-select-001.ogg')
-    expect(scene.load.audio).toHaveBeenCalledWith('audio-defeat', 'assets/audio/kenney-jingle-hit-07.ogg')
+    expect(scene.load.audio).toHaveBeenCalledWith('audio-element-select', 'assets/audio/ec-element-select-v1.wav')
+    expect(scene.load.audio).toHaveBeenCalledWith('audio-defeat', 'assets/audio/ec-defeat-v1.wav')
   })
 
   it('plays known cues safely and ignores unknown cues', () => {
